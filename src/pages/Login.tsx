@@ -1,191 +1,315 @@
-import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useState } from "react";
+import { Eye, EyeOff, BookOpen, ArrowRight, GraduationCap, Users, BarChart2 } from "lucide-react";
 
-// 1. Definisi Tipe Data untuk Modul Pelatihan B3
-interface Module {
-    id: number;
-    title: string;
-    type: 'PDF' | 'Video' | 'Kuis';
-    duration: string;
-    isCompleted: boolean;
-}
+export default function App() {
+    const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
-export default function CourseWorkspace() {
-    // Mengambil ID kursus dari URL jika nanti dihubungkan ke data dinamis
-    const { id } = useParams<{ id: string }>();
-
-    // 2. Data Dummy Silabus Spesifik Pelatihan Angkutan Barang Berbahaya (B3)
-    const [modules, setModules] = useState<Module[]>([
-        { id: 1, title: "1. Dasar Hukum & Perizinan Angkutan Jalan B3", type: "PDF", duration: "12 Halaman", isCompleted: true },
-        { id: 2, title: "2. Klasifikasi & Karakteristik Sembilan Kelas Bahan B3", type: "Video", duration: "18 Menit", isCompleted: false },
-        { id: 3, title: "3. Standarisasi Plakat & Simbol Kamera pada Armada Truk", type: "PDF", duration: "8 Halaman", isCompleted: false },
-        { id: 4, title: "4. Video Simulasi Penanganan Kebocoran Zat Cair Mudah Menyala", type: "Video", duration: "15 Menit", isCompleted: false },
-        { id: 5, title: "5. Evaluasi Teori: Tanggap Darurat & Pertolongan Pertama B3", type: "Kuis", duration: "20 Soal Ujian", isCompleted: false },
-    ]);
-
-    // State untuk memantau modul mana yang sedang dibuka oleh peserta
-    const [activeModule, setActiveModule] = useState<Module>(modules[0]);
-
-    // Fungsi simulasi untuk menandai modul selesai dan lanjut ke materi berikutnya
-    const handleCompleteAndNext = () => {
-        // Tandai modul saat ini sebagai selesai
-        setModules(prev => prev.map(m => m.id === activeModule.id ? { ...m, isCompleted: true } : m));
-        
-        // Cari indeks berikutnya
-        const currentIndex = modules.findIndex(m => m.id === activeModule.id);
-        if (currentIndex < modules.length - 1) {
-            setActiveModule(modules[currentIndex + 1]);
-        } else {
-            alert("Selamat! Anda telah menyelesaikan seluruh rangkaian materi di kelas ini. Silakan ambil e-sertifikat Anda.");
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !password) {
+            setError("Harap isi email dan kata sandi.");
+            return;
         }
+        setError("");
+        setIsLoading(true);
+        setTimeout(() => setIsLoading(false), 1800);
     };
 
+    const stats = [
+        { icon: GraduationCap, value: "12.400+", label: "Pelajar Aktif" },
+        { icon: BookOpen, value: "340+", label: "Kursus Tersedia" },
+        { icon: Users, value: "180+", label: "Instruktur" },
+        { icon: BarChart2, value: "94%", label: "Tingkat Penyelesaian" },
+    ];
+
     return (
-        <div className="flex h-screen bg-slate-900 overflow-hidden font-sans text-slate-100 antialiased">
-            
-            {/* ================= SIDEBAR KIRI: DAFTAR MODUL SILABUS ================= */}
-            <aside className="w-80 bg-slate-800 border-r border-slate-700/50 flex flex-col flex-shrink-0">
-                {/* Header Kiri */}
-                <div className="p-4 border-b border-slate-700/50 bg-gradient-to-r from-indigo-700 to-indigo-800">
-                    <Link to="/" className="text-xs text-indigo-200 hover:text-white flex items-center gap-1 mb-2 font-bold transition">
-                        ← Kembali ke Katalog
-                    </Link>
-                    <h2 className="font-black text-sm tracking-tight text-white uppercase line-clamp-1">
-                        ANGKUTAN B3 - KELAS 3
-                    </h2>
-                    <p className="text-[10px] text-indigo-200 font-medium mt-0.5 tracking-wide">
-                        Sertifikasi Driver & Logistik Nasional
+        <div
+            className="min-h-screen w-full flex font-sans antialiased"
+        >
+            {/* Left panel — brand + stats */}
+            <div className="hidden lg:flex lg:w-[52%] xl:w-[55%] flex-col justify-between p-12 xl:p-16 bg-[#1d2b6b] relative overflow-hidden">
+                {/* Subtle grid overlay */}
+                <div
+                    className="absolute inset-0 opacity-[0.04]"
+                    style={{
+                        backgroundImage:
+                            "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+                        backgroundSize: "40px 40px",
+                    }}
+                />
+
+                {/* Accent blob */}
+                <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#3d52a0] opacity-30 blur-3xl" />
+                <div className="absolute bottom-0 left-1/4 w-72 h-72 rounded-full bg-[#0f1d50] opacity-50 blur-3xl" />
+
+                {/* Logo */}
+                <div className="relative z-10 flex items-center gap-3">
+                    <div className="w-9 h-9 bg-white rounded-sm flex items-center justify-center">
+                        <BookOpen size={18} className="text-[#1d2b6b]" strokeWidth={2.5} />
+                    </div>
+                    <span className="text-white font-semibold text-lg tracking-tight">
+                        Learning Management System
+                    </span>
+                </div>
+
+                {/* Hero copy */}
+                <div className="relative z-10">
+                    <p
+                        className="text-[#7b92e8] text-xs font-medium tracking-[0.18em] uppercase mb-4 font-mono"
+                    >
+                        Platform Belajar Terpadu
+                    </p>
+                    <h1 className="text-white text-4xl xl:text-5xl font-bold leading-[1.15] tracking-tight mb-6">
+                        Tingkatkan
+                        <br />
+                        Kompetensi
+                        <br />
+                        <span className="text-[#7b92e8]">Tanpa Batas.</span>
+                    </h1>
+                    <p className="text-[#a8b8e8] text-base leading-relaxed max-w-sm">
+                        Akses ribuan materi pembelajaran, lacak kemajuan belajarmu, dan raih
+                        sertifikasi yang diakui secara nasional.
                     </p>
                 </div>
 
-                {/* List Modul */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-1">
-                    {modules.map((mod) => (
-                        <button
-                            key={mod.id}
-                            onClick={() => setActiveModule(mod)}
-                            className={`w-full text-left p-3 rounded-xl text-xs transition border flex flex-col relative overflow-hidden group ${
-                                activeModule.id === mod.id 
-                                ? 'bg-indigo-600 border-indigo-500 text-white font-semibold shadow-md shadow-indigo-900/30' 
-                                : 'bg-slate-800/40 hover:bg-slate-700/40 border-slate-700/30 text-slate-300 hover:text-white'
-                            }`}
+                {/* Stats grid */}
+                <div className="relative z-10 grid grid-cols-2 gap-px bg-white/10 rounded-lg overflow-hidden border border-white/10">
+                    {stats.map(({ icon: Icon, value, label }) => (
+                        <div
+                            key={label}
+                            className="bg-[#1d2b6b] px-5 py-4 hover:bg-[#253480] transition-colors duration-150"
                         >
-                            <div className="flex justify-between items-start w-full gap-2">
-                                <span className="leading-snug">{mod.title}</span>
-                                {mod.isCompleted && (
-                                    <span className="text-emerald-400 font-bold flex-shrink-0 text-[10px] bg-emerald-500/10 px-1 rounded">✓ Done</span>
-                                )}
+                            <Icon size={14} className="text-[#7b92e8] mb-2" strokeWidth={2} />
+                            <div className="text-white font-bold text-xl tracking-tight">
+                                {value}
                             </div>
-                            
-                            {/* Metadata Modul */}
-                            <span className="text-[10px] mt-2 flex items-center gap-2 text-slate-400 group-hover:text-slate-300">
-                                <span className={`uppercase px-1.5 py-0.5 rounded text-[9px] font-black ${
-                                    mod.type === 'Video' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/20' :
-                                    mod.type === 'Kuis' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/20' :
-                                    'bg-sky-500/20 text-sky-400 border border-sky-500/20'
-                                }`}>
-                                    {mod.type}
-                                </span>
-                                {mod.duration}
-                            </span>
-                        </button>
+                            <div
+                                className="text-[#7b92e8] text-xs mt-0.5 font-mono"
+                            >
+                                {label}
+                            </div>
+                        </div>
                     ))}
                 </div>
-            </aside>
+            </div>
 
-            {/* ================= AREA KANAN: WORKSPACE KONTEN MATERI ================= */}
-            <main className="flex-1 flex flex-col overflow-hidden bg-slate-950">
-                {/* Header Konten */}
-                <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center shadow-md">
-                    <div>
-                        <span className="text-[10px] font-bold text-indigo-400 tracking-wider block uppercase mb-0.5">Materi Sedang Aktif</span>
-                        <h1 className="font-bold text-sm text-white tracking-tight">{activeModule.title}</h1>
+            {/* Right panel — login form */}
+            <div className="flex-1 flex items-center justify-center bg-[#f7f7f8] px-6 py-12">
+                <div className="w-full max-w-[400px]">
+                    {/* Mobile logo */}
+                    <div className="flex items-center gap-2 mb-10 lg:hidden">
+                        <div className="w-8 h-8 bg-[#1d2b6b] rounded-sm flex items-center justify-center">
+                            <BookOpen size={15} className="text-white" strokeWidth={2.5} />
+                        </div>
+                        <span className="text-[#1d2b6b] font-semibold text-lg tracking-tight">
+                            Learning Management System
+                        </span>
                     </div>
-                    
-                    <button 
-                        onClick={handleCompleteAndNext}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2 rounded-lg font-bold transition shadow-md shadow-emerald-900/20"
-                    >
-                        Selesai & Lanjutkan →
-                    </button>
-                </div>
 
-                {/* Konten Utama Renderer */}
-                <div className="flex-1 p-6 overflow-y-auto flex items-center justify-center">
-                    
-                    {/* Kondisi 1: Materi bertipe Video */}
-                    {activeModule.type === "Video" && (
-                        <div className="w-full max-w-4xl aspect-video bg-black flex flex-col items-center justify-center rounded-2xl shadow-2xl border border-slate-800 relative overflow-hidden group">
-                            {/* Di sini nanti diisi link pemutar video dari Cloudflare R2 */}
-                            <div className="text-center p-6">
-                                <div className="w-16 h-16 bg-amber-500 text-slate-950 font-black text-xl flex items-center justify-center rounded-full mx-auto mb-4 animate-pulse cursor-pointer">
-                                    ▶
-                                </div>
-                                <p className="text-sm font-bold text-slate-200">Video Player Pemutar Materi B3</p>
-                                <p className="text-xs text-slate-500 mt-1">Streaming aman dikelola langsung via infrastruktur Cloudflare R2.</p>
+                    {/* Heading */}
+                    <div className="mb-8">
+                        <h2 className="text-[#0f1117] text-2xl font-bold tracking-tight mb-1">
+                            Selamat datang kembali
+                        </h2>
+                        <p className="text-[#6b7280] text-sm">
+                            Masuk ke akun belajarmu untuk melanjutkan.
+                        </p>
+                    </div>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="email"
+                                className="block text-[#0f1117] text-xs font-medium tracking-wide uppercase font-mono"
+                                style={{ letterSpacing: "0.06em" }}
+                            >
+                                Email
+                            </label>
+                            <input
+                                id="email"
+                                type="email"
+                                autoComplete="email"
+                                placeholder="nama@institusi.ac.id"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full h-11 px-3.5 bg-white border border-[rgba(15,17,23,0.12)] rounded text-[#0f1117] text-sm placeholder:text-[#b0b7ce] focus:outline-none focus:border-[#3d52a0] focus:ring-2 focus:ring-[#3d52a0]/15 transition-all duration-150"
+                            />
+                        </div>
+
+                        {/* Password */}
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <label
+                                    htmlFor="password"
+                                    className="block text-[#0f1117] text-xs font-medium tracking-wide uppercase font-mono"
+                                    style={{ letterSpacing: "0.06em" }}
+                                >
+                                    Kata Sandi
+                                </label>
+                                <a
+                                    href="#"
+                                    className="text-xs text-[#3d52a0] hover:text-[#1d2b6b] transition-colors duration-150 font-medium"
+                                >
+                                    Lupa kata sandi?
+                                </a>
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 bg-slate-900/80 border-t border-slate-800 p-3 flex justify-between text-[10px] text-slate-400">
-                                <span>Status: Streaming Mode</span>
-                                <span>Durasi Target: {activeModule.duration}</span>
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    autoComplete="current-password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full h-11 px-3.5 pr-11 bg-white border border-[rgba(15,17,23,0.12)] rounded text-[#0f1117] text-sm placeholder:text-[#b0b7ce] focus:outline-none focus:border-[#3d52a0] focus:ring-2 focus:ring-[#3d52a0]/15 transition-all duration-150"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#b0b7ce] hover:text-[#6b7280] transition-colors duration-150"
+                                    aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+                                >
+                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
                             </div>
                         </div>
-                    )}
 
-                    {/* Kondisi 2: Materi bertipe Kuis */}
-                    {activeModule.type === "Kuis" && (
-                        <div className="w-full max-w-xl bg-slate-900 text-slate-100 p-8 rounded-2xl shadow-2xl border border-slate-800 text-center">
-                            <div className="w-12 h-12 bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center rounded-full mx-auto text-xl mb-4 font-bold">
-                                📋
-                            </div>
-                            <h3 className="text-lg font-black text-white uppercase tracking-tight">Evaluasi Kelulusan Lemdiklat</h3>
-                            <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto leading-relaxed">
-                                Untuk mendapatkan nomor registrasi sertifikat resmi angkutan barang berbahaya, Anda wajib menjawab benar minimal **75%** soal kuis regulasi ini.
-                            </p>
-                            
-                            <div className="my-6 bg-slate-950 p-4 rounded-xl border border-slate-800 text-left space-y-2 text-xs text-slate-400">
-                                <p>• Jumlah Soal: <span className="text-white font-bold">20 Soal Pilihan Ganda</span></p>
-                                <p>• Batas Waktu: <span className="text-white font-bold">30 Menit Kontinu</span></p>
-                                <p>• Kesempatan Ulang: <span className="text-white font-bold">2 Kali Percobaan</span></p>
-                            </div>
-
-                            <button className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-lg shadow-indigo-900/40 transition">
-                                Mulai Ujian Sertifikasi Sekarang
+                        {/* Remember me */}
+                        <div className="flex items-center gap-2.5">
+                            <button
+                                type="button"
+                                role="checkbox"
+                                aria-checked={rememberMe}
+                                onClick={() => setRememberMe(!rememberMe)}
+                                className={`w-4 h-4 rounded-sm border flex items-center justify-center flex-shrink-0 transition-all duration-150 ${rememberMe
+                                    ? "bg-[#1d2b6b] border-[#1d2b6b]"
+                                    : "bg-white border-[rgba(15,17,23,0.2)] hover:border-[#3d52a0]"
+                                    }`}
+                            >
+                                {rememberMe && (
+                                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                        <path
+                                            d="M1 4L3.5 6.5L9 1"
+                                            stroke="white"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                )}
                             </button>
+                            <span className="text-sm text-[#6b7280] select-none cursor-pointer" onClick={() => setRememberMe(!rememberMe)}>
+                                Ingat saya selama 30 hari
+                            </span>
                         </div>
-                    )}
 
-                    {/* Kondisi 3: Materi bertipe PDF/Teks Modul */}
-                    {activeModule.type === "PDF" && (
-                        <div className="w-full max-w-4xl h-full bg-slate-900 text-slate-300 p-8 rounded-2xl shadow-xl border border-slate-800 flex flex-col overflow-hidden">
-                            <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
-                                <h3 className="text-sm font-black text-indigo-400 uppercase tracking-wide flex items-center gap-1.5">
-                                    📄 Dokumen Peraturan Resmi Lemdiklat
-                                </h3>
-                                <span className="text-[10px] text-slate-500 bg-slate-950 px-2 py-0.5 rounded font-mono">Format: PDF Read</span>
+                        {/* Error */}
+                        {error && (
+                            <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+                                {error}
                             </div>
-                            
-                            {/* Area Baca PDF */}
-                            <div className="flex-1 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-300 pr-2">
-                                <p className="font-bold text-sm text-white mb-2">Pasal Pendahuluan: Klasifikasi Operasional Kendaraan B3</p>
-                                <p>
-                                    Berdasarkan Peraturan Pemerintah RI dan instruksi teknis Kemenhub, setiap angkutan jalan yang membawa muatan Barang Berbahaya dan Beracun (B3) wajib mematuhi ketentuan tata cara pengangkutan, rute perjalanan khusus, serta kelayakan teknis kendaraan bermotor.
-                                </p>
-                                <p>
-                                    Pengemudi wajib memiliki Sertifikasi Kompetensi Pengemudi Angkutan B3 yang sah. Pelanggaran terhadap kelengkapan dokumen penanda dan alat tanggap darurat (APAR jenis powder minimal 9kg, spill kit penyerap cairan) akan dikenai sanksi administratif dan penghentian operasi oleh petugas berwenang.
-                                </p>
-                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 border-l-4 border-l-amber-500 text-[11px] text-amber-300 my-4 leading-normal">
-                                    <strong>PENTING UNTUK DRIVER:</strong> Papan nomor UN (United Nations Number) dan simbol bahaya utama wajib terpasang di 4 sisi armada: sisi depan kabin, lambung kanan, lambung kiri, dan bagian belakang tangki/bak muatan.
-                                </div>
-                                <p>
-                                    Peserta diwajibkan membaca seluruh lampiran lembar data keselamatan bahan (MSDS / Material Safety Data Sheet) sebelum masuk ke sesi ujian praktik lapangan...
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                        )}
 
+                        {/* Submit */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full h-11 bg-[#1d2b6b] hover:bg-[#253480] active:bg-[#17224f] text-white text-sm font-semibold rounded flex items-center justify-center gap-2 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <svg
+                                        className="animate-spin"
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                    >
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            strokeOpacity="0.3"
+                                        />
+                                        <path
+                                            d="M12 2a10 10 0 0 1 10 10"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                    Memproses...
+                                </>
+                            ) : (
+                                <>
+                                    Masuk
+                                    <ArrowRight size={15} strokeWidth={2.5} />
+                                </>
+                            )}
+                        </button>
+                    </form>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3 my-6">
+                        <div className="flex-1 h-px bg-[rgba(15,17,23,0.08)]" />
+                        <span
+                            className="text-[#b0b7ce] text-xs font-mono"
+                        >
+                            atau
+                        </span>
+                        <div className="flex-1 h-px bg-[rgba(15,17,23,0.08)]" />
+                    </div>
+
+                    {/* SSO */}
+                    {/* <button
+                        type="button"
+                        className="w-full h-11 bg-white border border-[rgba(15,17,23,0.12)] hover:border-[#3d52a0] hover:bg-[#f0f2fa] rounded flex items-center justify-center gap-2.5 text-sm font-medium text-[#0f1117] transition-all duration-150"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path
+                                d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"
+                                fill="#eef0f8"
+                                stroke="#3d52a0"
+                                strokeWidth="1.5"
+                            />
+                            <path
+                                d="M8 12h8M12 8v8"
+                                stroke="#3d52a0"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                        Masuk dengan SSO Institusi
+                    </button> */}
+
+                    {/* Register */}
+                    {/* <p className="text-center text-sm text-[#6b7280] mt-8">
+                        Belum punya akun?{" "}
+                        <a
+                            href="#"
+                            className="text-[#3d52a0] hover:text-[#1d2b6b] font-medium transition-colors duration-150"
+                        >
+                            Daftar sekarang
+                        </a>
+                    </p> */}
+
+                    {/* Footer */}
+                    <p
+                        className="text-center text-[#b0b7ce] text-xs mt-10 font-mono"
+                    >
+                        © 2025 Learning Management System · Kebijakan Privasi · Syarat & Ketentuan
+                    </p>
                 </div>
-            </main>
-
+            </div>
         </div>
     );
 }

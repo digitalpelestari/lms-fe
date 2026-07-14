@@ -4,19 +4,22 @@ import LandingDashboard from './pages/LandingDashboard';
 import CourseWorkspace from './pages/CourseWorkspace';
 import ModuleViewer from './pages/ModuleViewer';
 import InstructorDashboard from './pages/InstructorDashboard'; // Import Halaman Baru Admin
+import Login from './pages/Login';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login />} />
+
         {/* Rute Sisi Siswa / Peserta */}
         <Route path="/" element={<LandingDashboard />} />
         <Route path="/course/:id" element={<CourseWorkspace />} />
         <Route path="/course/:id/modul/:modulId" element={<ModuleViewer />} />
-        
+
         {/* Rute Sisi Instruktur / Admin Lemdiklat */}
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-        
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

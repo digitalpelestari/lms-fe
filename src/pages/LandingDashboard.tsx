@@ -16,7 +16,7 @@ interface AvailableCourse {
 
 export default function LandingDashboard() {
     // Data dummy untuk section Layanan Sistem (Gambar 2)
-    
+
 
     // Data dummy untuk Grid Available Courses (Gambar 4)
     const courses: AvailableCourse[] = [
@@ -30,7 +30,7 @@ export default function LandingDashboard() {
 
     return (
         <div className="bg-slate-50 min-h-screen font-sans text-slate-800 antialiased">
-            
+
             {/* 1. NAVBAR (Gambar 1 - Atas) */}
             <nav className="bg-white border-b border-slate-100 sticky top-0 z-50 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -47,7 +47,7 @@ export default function LandingDashboard() {
                         <a href="#" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Home</a>
                         <a href="/course/1" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Course</a>
                         <a href="#" className="text-sm font-medium text-slate-600 hover:text-slate-900">Support Page</a>
-                        <button className="text-sm font-bold text-blue-600 hover:text-fuchsia-700 bg-blue-50 px-4 py-2 rounded-full transition">Log in</button>
+                        <a href="/login" className="text-sm font-bold text-blue-600 hover:text-fuchsia-700 bg-blue-50 px-4 py-2 rounded-full transition">Log in</a>
                     </div>
                 </div>
             </nav>
@@ -62,13 +62,13 @@ export default function LandingDashboard() {
                         </div>
                         <h1 className="text-xs font-bold uppercase tracking-wider text-indigo-200">Learning Management System (LMS)</h1>
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight mt-1 mb-4 leading-tight">
-                            PT Peduli Lestari Indonesia  
+                            PT Peduli Lestari Indonesia
                         </h2>
                         <p className="text-indigo-100 text-sm font-medium leading-relaxed border-t border-indigo-700/50 pt-3">
                             BELAJAR, COMPLIANT, AMAN DI JALAN, DAN SIAP SERTIFIKASI PROFESIONAL
                         </p>
                     </div>
-                    
+
                     {/* Aksen Hiasan Kanan mirip bingkai Instagram di Gambar 1 */}
                     <div className="hidden lg:block absolute right-12 bottom-0 top-12 w-80 bg-white p-3 pb-8 rounded-t-xl shadow-2xl rotate-2 translate-y-4">
                         <div className="w-full h-56 bg-gradient-to-tr from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center text-indigo-900 font-black text-center p-4">
@@ -93,7 +93,7 @@ export default function LandingDashboard() {
                             Panduan Penggunaan LMS bagi calon pengemudi & armada logistik &gt; <a href="#" className="text-fuchsia-500 font-bold hover:underline">klik disini</a>
                         </p>
                     </div>
-                    
+
                     <div className="lg:col-span-2 flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 bg-blue-600 text-white p-6 rounded-2xl shadow-lg shadow-blue-100 flex flex-col justify-between min-h-[120px]">
                             <span className="text-4xl font-black tracking-tight">8,291</span>
@@ -124,7 +124,7 @@ export default function LandingDashboard() {
                                     {course.period}
                                 </span>
                             </div>
-                            
+
                             {/* Info Detail Kelas */}
                             <div className="p-4 flex-1 flex flex-col justify-between">
                                 <div>
@@ -138,7 +138,7 @@ export default function LandingDashboard() {
                                         Instruktur: <span className="text-slate-600 font-bold">{course.instructor}</span>
                                     </p>
                                 </div>
-                                
+
                                 <button className="mt-4 w-full bg-slate-50 hover:bg-indigo-50 border border-slate-200 text-slate-700 hover:text-indigo-600 font-bold py-2 px-3 rounded-lg text-xs transition duration-150">
                                     Lihat Detail Pelatihan
                                 </button>
