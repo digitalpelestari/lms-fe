@@ -42,7 +42,7 @@ export default function BulkRegister() {
         const token = localStorage.getItem("token");
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/users/register-bulk', 
+            const response = await axios.post('http://api.pelestari.id/api/users/register-bulk', 
                 { participants: validData },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

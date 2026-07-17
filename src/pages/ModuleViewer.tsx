@@ -82,7 +82,7 @@ export default function ModuleViewer() {
 
     const fetchCourseData = () => {
         const token = localStorage.getItem("token");
-        axios.get(`http://127.0.0.1:8000/api/courses/${id}`, {
+        axios.get(`http://api.pelestari.id/api/courses/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
@@ -134,7 +134,7 @@ export default function ModuleViewer() {
         const token = localStorage.getItem("token");
         setIsSavingProgress(true);
         try {
-            await axios.post(`http://127.0.0.1:8000/api/courses/sub-module/${subModuleId}/complete`, {}, {
+            await axios.post(`api.pelestari.id/api/courses/sub-module/${subModuleId}/complete`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchCourseData();
@@ -197,14 +197,14 @@ export default function ModuleViewer() {
 
             try {
                 await axios.post(
-                    `http://127.0.0.1:8000/api/courses/${id}/quizzes/${activeSubModule!.id}/submit`,
+                    `http://api.pelestari.id/api/courses/${id}/quizzes/${activeSubModule!.id}/submit`,
                     { score: calculatedFinalScore },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
                 setQuizSubmitted(true);
 
-                await axios.post(`http://127.0.0.1:8000/api/courses/sub-module/${activeSubModule!.id}/complete`, {}, {
+                await axios.post(`http://api.pelestari.id/api/courses/sub-module/${activeSubModule!.id}/complete`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

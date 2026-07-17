@@ -50,7 +50,7 @@ export default function Dashboard() {
 
         const fetchCourses = async () => {
             try {
-                const response = await axiosInstance.get("http://127.0.0.1:8000/api/courses", {
+                const response = await axiosInstance.get("http://api.pelestari.id/api/courses", {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setCourses(response.data);
