@@ -177,7 +177,7 @@ export default function Dashboard() {
                                 className="h-10 px-4 bg-white hover:bg-slate-50 text-indigo-650 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs flex items-center gap-2 transition-all cursor-pointer"
                             >
                                 <UserPlus size={15} className="text-indigo-600" />
-                                Registrasi Massal
+                                Registrasi Peserta
                             </button>
 
                             <button 
