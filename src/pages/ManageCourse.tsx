@@ -14,7 +14,8 @@ import {
     HelpCircle,
     Presentation,
     Trash2,
-    Calendar
+    Calendar,
+    ImageIcon 
 } from 'lucide-react';
 
 interface Material {
@@ -30,12 +31,18 @@ interface TopicGroup {
     materials: Material[];
 }
 
+interface QuizOptionInput {
+    text: string;
+    imageFile: File | null;
+}
+
 interface QuizQuestion {
     question: string;
-    a: string;
-    b: string;
-    c: string;
-    d: string;
+    question_image: File | null; 
+    a: QuizOptionInput;
+    b: QuizOptionInput;
+    c: QuizOptionInput;
+    d: QuizOptionInput;
     correct_answer: 'a' | 'b' | 'c' | 'd';
 }
 
@@ -47,48 +54,47 @@ interface GradeRow {
     quiz_title?: string;
     score: number;
     status: 'LULUS' | 'REMIDI';
-    formatted_date?: string; // 👈 Menampung format tanggal dari backend
+    formatted_date?: string; 
 }
 
 export default function ManageCourse() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    // State Navigasi & Filter Manajemen Nilai
     const [activeTab, setActiveTab] = useState<'silabus' | 'nilai'>('silabus');
     const [selectedQuizId, setSelectedQuizId] = useState<string>('');
     const [grades, setGrades] = useState<GradeRow[]>([]);
-    const [filterDate, setFilterDate] = useState<string>(''); // 👈 State untuk menampung filter tanggal kalender
+    const [filterDate, setFilterDate] = useState<string>(''); 
 
-    // State Data Kurikulum
     const [courseTitle, setCourseTitle] = useState<string>('');
     const [topicGroups, setTopicGroups] = useState<TopicGroup[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    // State Form 1: Buat Bab Baru
     const [newBabTitle, setNewBabTitle] = useState<string>('');
     const [isCreatingBab, setIsCreatingBab] = useState<boolean>(false);
 
-    // State Form 2: Unggah Materi
     const [selectedBabId, setSelectedBabId] = useState<string>('');
     const [materialTitle, setMaterialTitle] = useState<string>('');
     const [materialType, setMaterialType] = useState<string>('PDF');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploadingMaterial, setIsUploadingMaterial] = useState<boolean>(false);
     
-    // Manajemen Soal Kuis (Default isi 1 soal kosong)
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([
-        { question: '', a: '', b: '', c: '', d: '', correct_answer: 'a' }
+        { 
+            question: '', 
+            question_image: null,
+            a: { text: '', imageFile: null },
+            b: { text: '', imageFile: null },
+            c: { text: '', imageFile: null },
+            d: { text: '', imageFile: null },
+            correct_answer: 'a' 
+        }
     ]);
     
-    // State untuk Persentase Upload Tracking
     const [uploadProgress, setUploadProgress] = useState<number>(0);
-
-    // State UI Feedback
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
 
-    // 👇 MODIFIKASI: Fetch data menyertakan query param tanggal filter
     const fetchManagementData = () => {
         const token = localStorage.getItem("token");
         const url = `http://127.0.0.1:8000/api/courses/${id}/management-details?date=${filterDate}`;
@@ -99,8 +105,6 @@ export default function ManageCourse() {
         .then(response => {
             const groups = response.data.topic_groups || [];
             setTopicGroups(groups);
-            
-            // Tangkap list data nilai lengkap dengan kolom tanggal baru
             setGrades(response.data.grades || []);
             
             if (groups.length > 0 && !selectedBabId) {
@@ -115,7 +119,6 @@ export default function ManageCourse() {
         });
     };
 
-    // 👇 PEMICU OTOMATIS: Fetch ulang data silabus & nilai setiap kali filter tanggal berubah
     useEffect(() => {
         const token = localStorage.getItem("token");
         axios.get(`http://127.0.0.1:8000/api/courses/${id}`, {
@@ -123,7 +126,7 @@ export default function ManageCourse() {
         }).then(res => setCourseTitle(res.data.title));
 
         fetchManagementData();
-    }, [id, filterDate]); // 👈 `filterDate` masuk ke dependency array di sini
+    }, [id, filterDate]);
 
     const handleCreateBab = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -135,8 +138,8 @@ export default function ManageCourse() {
         setSuccessMessage('');
 
         try {
-            await axios.post(`http://127.0.0.1:8000/api/courses/${id}/topic-groups`, 
-                { title: newBabTitle },
+            await axios.post(`http://127.0.0.1:8000/api/topic-groups`, 
+                { course_id: id, title: newBabTitle },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setSuccessMessage("Bab baru berhasil ditambahkan!");
@@ -191,14 +194,40 @@ export default function ManageCourse() {
         }
     };
 
-    const handleQuizChange = (index: number, field: keyof QuizQuestion, value: string) => {
+    const handleQuizTextChange = (index: number, field: 'question' | 'correct_answer', value: string) => {
         const updatedQuestions = [...quizQuestions];
         updatedQuestions[index] = { ...updatedQuestions[index], [field]: value };
         setQuizQuestions(updatedQuestions);
     };
 
+    const handleQuizOptionTextChange = (index: number, optionKey: 'a' | 'b' | 'c' | 'd', value: string) => {
+        const updatedQuestions = [...quizQuestions];
+        updatedQuestions[index][optionKey].text = value;
+        setQuizQuestions(updatedQuestions);
+    };
+
+    const handleQuizQuestionImageChange = (index: number, file: File | null) => {
+        const updatedQuestions = [...quizQuestions];
+        updatedQuestions[index].question_image = file;
+        setQuizQuestions(updatedQuestions);
+    };
+
+    const handleQuizOptionImageChange = (index: number, optionKey: 'a' | 'b' | 'c' | 'd', file: File | null) => {
+        const updatedQuestions = [...quizQuestions];
+        updatedQuestions[index][optionKey].imageFile = file;
+        setQuizQuestions(updatedQuestions);
+    };
+
     const addQuizQuestionRow = () => {
-        setQuizQuestions([...quizQuestions, { question: '', a: '', b: '', c: '', d: '', correct_answer: 'a' }]);
+        setQuizQuestions([...quizQuestions, { 
+            question: '', 
+            question_image: null,
+            a: { text: '', imageFile: null },
+            b: { text: '', imageFile: null },
+            c: { text: '', imageFile: null },
+            d: { text: '', imageFile: null },
+            correct_answer: 'a' 
+        }]);
     };
 
     const removeQuizQuestionRow = (index: number) => {
@@ -225,7 +254,26 @@ export default function ManageCourse() {
         formData.append('type', materialType);
 
         if (materialType === 'Kuis') {
-            formData.append('quiz_data', JSON.stringify(quizQuestions));
+            quizQuestions.forEach((q, idx) => {
+                formData.append(`questions[${idx}][question]`, q.question);
+                formData.append(`questions[${idx}][answer]`, q.correct_answer);
+                
+                if (q.question_image) {
+                    formData.append(`questions[${idx}][question_image]`, q.question_image);
+                }
+
+                formData.append(`questions[${idx}][a][text]`, q.a.text);
+                if (q.a.imageFile) formData.append(`questions[${idx}][a][image]`, q.a.imageFile);
+                
+                formData.append(`questions[${idx}][b][text]`, q.b.text);
+                if (q.b.imageFile) formData.append(`questions[${idx}][b][image]`, q.b.imageFile);
+
+                formData.append(`questions[${idx}][c][text]`, q.c.text);
+                if (q.c.imageFile) formData.append(`questions[${idx}][c][image]`, q.c.imageFile);
+
+                formData.append(`questions[${idx}][d][text]`, q.d.text);
+                if (q.d.imageFile) formData.append(`questions[${idx}][d][image]`, q.d.imageFile);
+            });
         } else if (selectedFile) {
             formData.append('file', selectedFile);
         }
@@ -244,10 +292,18 @@ export default function ManageCourse() {
                 }
             });
 
-            setSuccessMessage("🎉 Materi silabus baru berhasil diterbitkan!");
+            setSuccessMessage("🎉 Kuis bergambar/materi baru berhasil diterbitkan!");
             setMaterialTitle('');
             setSelectedFile(null);
-            setQuizQuestions([{ question: '', a: '', b: '', c: '', d: '', correct_answer: 'a' }]); 
+            setQuizQuestions([{ 
+                question: '', 
+                question_image: null,
+                a: { text: '', imageFile: null },
+                b: { text: '', imageFile: null },
+                c: { text: '', imageFile: null },
+                d: { text: '', imageFile: null },
+                correct_answer: 'a' 
+            }]); 
             
             const fileInput = document.getElementById('file-input') as HTMLInputElement;
             if (fileInput) fileInput.value = '';
@@ -255,7 +311,7 @@ export default function ManageCourse() {
             fetchManagementData();
         } catch (err: any) {
             console.error(err);
-            setErrorMessage(err.response?.data?.error_message || "Gagal mengunggah materi ke server.");
+            setErrorMessage(err.response?.data?.message || "Gagal mengunggah kuis ke server.");
         } finally {
             setIsUploadingMaterial(false);
             setUploadProgress(0); 
@@ -335,11 +391,10 @@ export default function ManageCourse() {
                 )}
             </div>
 
-            {/* RENDER TAB 1: LOGIKA MANAJEMEN SILABUS */}
             {activeTab === 'silabus' ? (
                 <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     
-                    {/* PANEL KIRI: FORM MANIPULASI */}
+                    {/* PANEL KIRI: FORM INPUT */}
                     <div className="lg:col-span-5 space-y-6">
                         
                         {/* FORM 1: BUAT BAB BARU */}
@@ -439,8 +494,8 @@ export default function ManageCourse() {
                                 )}
 
                                 {materialType === 'Kuis' && (
-                                    <div className="space-y-4 border-t border-slate-100 pt-4">
-                                        <div className="flex justify-between items-center">
+                                    <div className="space-y-4 border-t border-slate-100 pt-4 max-h-[500px] overflow-y-auto pr-1">
+                                        <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2">
                                             <label className="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Daftar Pertanyaan Ujian</label>
                                             <button 
                                                 type="button" 
@@ -452,7 +507,7 @@ export default function ManageCourse() {
                                         </div>
 
                                         {quizQuestions.map((q, idx) => (
-                                            <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5 relative shadow-2xs">
+                                            <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative shadow-2xs">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-[10px] font-bold text-slate-500 font-mono">SOAL NO. {idx + 1}</span>
                                                     {quizQuestions.length > 1 && (
@@ -469,47 +524,79 @@ export default function ManageCourse() {
                                                 <input 
                                                     type="text" 
                                                     value={q.question} 
-                                                    onChange={(e) => handleQuizChange(idx, 'question', e.target.value)}
+                                                    onChange={(e) => handleQuizTextChange(idx, 'question', e.target.value)}
                                                     placeholder="Tulis kalimat pertanyaan di sini..."
                                                     className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:border-indigo-600"
                                                 />
 
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-[10px] font-bold text-slate-400 font-mono">A.</span>
-                                                        <input 
-                                                            type="text" value={q.a} onChange={(e) => handleQuizChange(idx, 'a', e.target.value)}
-                                                            placeholder="Opsi Jawaban A" className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-[11px] bg-white focus:outline-none"
-                                                        />
+                                                {/* 👇 TOMBOL CUSTOM UPLOAD GAMBAR SOAL UTAMA */}
+                                                <div className="bg-white p-3 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 font-mono uppercase">
+                                                        <ImageIcon size={14} className="text-slate-400" /> Gambar Soal Utama:
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60 text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1 shadow-2xs">
+                                                            <Upload size={12} />
+                                                            {q.question_image ? "Ganti Gambar" : "Pilih Gambar"}
+                                                            <input 
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={(e) => handleQuizQuestionImageChange(idx, e.target.files?.[0] || null)}
+                                                                className="hidden" 
+                                                            />
+                                                        </label>
+                                                        {q.question_image && (
+                                                            <span className="text-[10px] font-medium text-emerald-600 truncate max-w-[140px] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                                                ✓ {q.question_image.name}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-[10px] font-bold text-slate-400 font-mono">B.</span>
-                                                        <input 
-                                                            type="text" value={q.b} onChange={(e) => handleQuizChange(idx, 'b', e.target.value)}
-                                                            placeholder="Opsi Jawaban B" className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-[11px] bg-white focus:outline-none"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-[10px] font-bold text-slate-400 font-mono">C.</span>
-                                                        <input 
-                                                            type="text" value={q.c} onChange={(e) => handleQuizChange(idx, 'c', e.target.value)}
-                                                            placeholder="Opsi Jawaban C" className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-[11px] bg-white focus:outline-none"
-                                                        />
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-[10px] font-bold text-slate-400 font-mono">D.</span>
-                                                        <input 
-                                                            type="text" value={q.d} onChange={(e) => handleQuizChange(idx, 'd', e.target.value)}
-                                                            placeholder="Opsi Jawaban D" className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-[11px] bg-white focus:outline-none"
-                                                        />
-                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {(['a', 'b', 'c', 'd'] as const).map((key) => (
+                                                        <div key={key} className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-2">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="text-[10px] font-bold text-slate-400 font-mono uppercase">{key}.</span>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={q[key].text} 
+                                                                    onChange={(e) => handleQuizOptionTextChange(idx, key, e.target.value)}
+                                                                    placeholder={`Teks Opsi Jawaban ${key.toUpperCase()}`} 
+                                                                    className="w-full px-2 py-1 border-b border-slate-100 text-[11px] focus:outline-none"
+                                                                />
+                                                            </div>
+                                                            
+                                                            {/* 👇 TOMBOL CUSTOM UPLOAD GAMBAR PILIHAN OPSI */}
+                                                            <div className="flex items-center justify-between pl-4 pt-1 border-t border-slate-50">
+                                                                <span className="text-[9px] font-bold text-slate-400">Gambar Pilihan {key.toUpperCase()}:</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <label className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100/40 text-[9px] font-bold rounded-md cursor-pointer transition flex items-center gap-1">
+                                                                        <ImageIcon size={10} />
+                                                                        {q[key].imageFile ? "Ubah" : "Pilih"}
+                                                                        <input 
+                                                                            type="file"
+                                                                            accept="image/*"
+                                                                            onChange={(e) => handleQuizOptionImageChange(idx, key, e.target.files?.[0] || null)}
+                                                                            className="hidden" 
+                                                                        />
+                                                                    </label>
+                                                                    {q[key].imageFile && (
+                                                                        <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1 py-0.2 rounded-md">
+                                                                            ✓ Aktif
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
 
                                                 <div className="pt-1 flex items-center gap-2">
                                                     <label className="block text-[9px] font-bold text-slate-500 uppercase font-mono">Kunci Jawaban Benar:</label>
                                                     <select 
                                                         value={q.correct_answer} 
-                                                        onChange={(e) => handleQuizChange(idx, 'correct_answer', e.target.value as any)}
+                                                        onChange={(e) => handleQuizTextChange(idx, 'correct_answer', e.target.value as any)}
                                                         className="p-1 border border-slate-200 rounded-md text-[10px] bg-white font-mono font-bold text-indigo-600 uppercase cursor-pointer focus:outline-none"
                                                     >
                                                         <option value="a">A</option>
@@ -548,10 +635,9 @@ export default function ManageCourse() {
                                 )}
                             </form>
                         </div>
-
                     </div>
 
-                    {/* PANEL KANAN: REVIEW PREVIEW */}
+                    {/* PANEL KANAN: PREVIEW STRUKTUR SILABUS */}
                     <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl shadow-xs p-5 md:p-6 min-h-[400px]">
                         <h2 className="text-xs font-bold text-indigo-950 uppercase tracking-wider mb-4 pb-2 border-b flex items-center gap-2">
                             <BookOpen size={15} className="text-indigo-600" /> Review Struktur Silabus Terbit
@@ -588,7 +674,7 @@ export default function ManageCourse() {
                                                 {group.materials.map((mat) => (
                                                     <div 
                                                         key={mat.id} 
-                                                        className="bg-white border border-slate-100 rounded-lg p-2 flex items-center justify-between text-[11px] font-medium text-slate-700 hover:shadow-xs transition group/item"
+                                                        className="bg-white border border-slate-100 rounded-lg p-2 flex items-center justify-between text-[11px] font-medium text-slate-700 hover:shadow-xs transition"
                                                     >
                                                         <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
                                                             {renderMaterialIcon(mat.type)}
@@ -618,19 +704,16 @@ export default function ManageCourse() {
 
                 </main>
             ) : (
-                
-                /* RENDER TAB 2: MANAJEMEN REKAPITULASI NILAI PENGEMUDI (DENGAN FILTER TANGGAL REALTIME) */
+                /* RENDER TAB 2: MANAJEMEN REKAPITULASI NILAI PENGEMUDI */
                 <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8">
                     <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5 md:p-6 space-y-6">
                         
-                        {/* HEADER & FILTER KALENDER KALIAN */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                             <div>
                                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Rekapitulasi Hasil Evaluasi Pengemudi B3</h2>
                                 <p className="text-[11px] text-slate-400 font-medium mt-0.5">Pilih modul kuis dan tentukan tanggal input untuk rekap presisi.</p>
                             </div>
 
-                            {/* 👇 CONTAINER INPUT KALENDER BARU */}
                             <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
                                 <Calendar size={13} className="text-slate-400" />
                                 <label className="text-[10px] font-bold text-slate-500 font-mono uppercase">Filter Hari:</label>
@@ -651,7 +734,6 @@ export default function ManageCourse() {
                             </div>
                         </div>
 
-                        {/* 1. KUMPULAN LIST BADGE MODUL KUIS */}
                         <div>
                             <label className="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-2">Daftar Modul Kuis Tersedia :</label>
                             <div className="flex flex-wrap gap-2">
@@ -663,7 +745,6 @@ export default function ManageCourse() {
                                         topicGroups.flatMap(group => group.materials || [])
                                             .filter(mat => mat.type === 'Kuis')
                                             .map((quiz: any) => {
-                                                // Hitung jumlah pengisi yang sesuai kuis & filter tanggal aktif
                                                 const participantCount = grades.filter(g => Number(g.sub_module_id) === Number(quiz.id)).length;
                                                 
                                                 return (
@@ -693,12 +774,10 @@ export default function ManageCourse() {
                             </div>
                         </div>
 
-                        {/* 2. TABEL KELULUSAN + KOLOM WAKTU INPUT */}
                         {selectedQuizId ? (() => {
                             const activeQuiz = topicGroups.flatMap(group => group.materials || [])
                                 .find(mat => String(mat.id) === selectedQuizId);
                             
-                            // Ambil grade yang sesuai kuis ID terpilih
                             const filteredGrades = grades.filter(row => Number(row.sub_module_id) === Number(selectedQuizId));
 
                             return (
@@ -722,7 +801,7 @@ export default function ManageCourse() {
                                                         <th className="p-3">NIK (Nomor Induk Kependudukan)</th>
                                                         <th className="p-3 text-center">Nilai Final Kuis</th>
                                                         <th className="p-3 text-center">Status Kompetensi</th>
-                                                        <th className="p-3">Waktu Input Jawaban</th> {/* 👈 HEADER KOLOM TANGGAL BARU */}
+                                                        <th className="p-3">Waktu Input Jawaban</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700 bg-white">
@@ -738,7 +817,6 @@ export default function ManageCourse() {
                                                                     {row.status}
                                                                 </span>
                                                             </td>
-                                                            {/* 👈 TAMPILKAN FORMAT WAKTU HASIL CONVERT DARI BACKEND LARAVEL */}
                                                             <td className="p-3 font-mono text-slate-650">{row.formatted_date || '-'}</td>
                                                         </tr>
                                                     ))}

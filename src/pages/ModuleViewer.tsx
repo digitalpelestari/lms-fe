@@ -12,7 +12,8 @@ import {
     ArrowLeft,
     Menu,
     X,
-    Check
+    Check,
+    ImageIcon 
 } from 'lucide-react';
 
 interface SubModule {
@@ -21,7 +22,7 @@ interface SubModule {
     type: 'PDF' | 'PPT' | 'Video' | 'Kuis' | 'Grup';
     isCompleted: boolean | number | string;
     file_url?: any; 
-    user_quiz_score?: number; // 👈 Menampung skor kuis dari database backend
+    user_quiz_score?: number; 
 }
 
 interface TopicGroup {
@@ -30,13 +31,32 @@ interface TopicGroup {
     subModules: SubModule[];
 }
 
+interface QuizOption {
+    text: string;
+    image: string | null; 
+}
+
 interface QuizQuestion {
     question: string;
-    a: string;
-    b: string;
-    c: string;
-    d: string;
-    correct_answer: 'a' | 'b' | 'c' | 'd';
+    question_image: string | null; 
+    options: {
+        a: QuizOption;
+        b: QuizOption;
+        c: QuizOption;
+        d: QuizOption;
+    };
+    answer: 'a' | 'b' | 'c' | 'd'; 
+}
+
+interface GradeRow {
+    id: number;
+    sub_module_id: number | string; 
+    name: string;
+    nik: string;
+    quiz_title?: string;
+    score: number;
+    status: 'LULUS' | 'REMIDI';
+    formatted_date?: string; 
 }
 
 export default function ModuleViewer() {
@@ -50,19 +70,16 @@ export default function ModuleViewer() {
     const [activeSubModule, setActiveSubModule] = useState<SubModule | null>(null);
     const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState<boolean>(false);
 
-    // STATE Manajemen Kuis Dinamis Mahasiswa
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [selectedAnswer, setSelectedAnswer] = useState<string>("");
     const [quizScore, setQuizScore] = useState<number>(0);
     const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
     const [isSavingProgress, setIsSavingProgress] = useState<boolean>(false);
 
-    // Helper untuk mengecek status selesai secara aman dan toleran tipe data
     const checkIsCompleted = (status: any) => {
         return status === true || status === 1 || status === '1' || status === 'true';
     };
 
-    // FUNGSI UTAMA: Ambil data kurikulum dari Laravel
     const fetchCourseData = () => {
         const token = localStorage.getItem("token");
         axios.get(`http://127.0.0.1:8000/api/courses/${id}`, {
@@ -113,7 +130,6 @@ export default function ModuleViewer() {
         fetchCourseData();
     }, [id]);
 
-    // FUNGSI AKSI: Tembak API Progress Tracking ke Laravel
     const markMaterialAsComplete = async (subModuleId: string | number) => {
         const token = localStorage.getItem("token");
         setIsSavingProgress(true);
@@ -137,18 +153,22 @@ export default function ModuleViewer() {
         }
     };
 
-    // Parsir data kuis dinamis secara aman
+    // 👈 LOGIKA FIX: Deep Parsing agar string ter-escape backslash MySQL terurai menjadi objek bersih
     const getQuizQuestions = (): QuizQuestion[] => {
         if (!activeSubModule || activeSubModule.type !== 'Kuis') return [];
         try {
-            if (Array.isArray(activeSubModule.file_url)) {
-                return activeSubModule.file_url;
+            let rawData = activeSubModule.file_url;
+
+            while (typeof rawData === 'string') {
+                if (!rawData.trim()) break;
+                rawData = JSON.parse(rawData);
             }
-            if (typeof activeSubModule.file_url === 'string') {
-                return JSON.parse(activeSubModule.file_url);
+
+            if (Array.isArray(rawData)) {
+                return rawData as QuizQuestion[];
             }
         } catch (e) {
-            console.error("Gagal melakukan parsing data kuis:", e);
+            console.error("Gagal melakukan deep parsing data kuis:", e);
         }
         return [];
     };
@@ -156,12 +176,10 @@ export default function ModuleViewer() {
     const questions = getQuizQuestions();
     const currentQuestion: QuizQuestion | undefined = questions[currentQuestionIndex];
 
-    // Handler perpindahan soal ujian kuis + Submit otomatis ke tabel quiz_results
     const handleNextQuizQuestion = async () => {
         if (!selectedAnswer || !currentQuestion) return;
 
-        // Validasi jawaban lokal dengan hitungan manual (karena state setQuizScore sifatnya async)
-        let isAnswerCorrect = selectedAnswer === currentQuestion.correct_answer.toLowerCase();
+        let isAnswerCorrect = selectedAnswer === currentQuestion.answer.toLowerCase();
         let finalCorrectCount = quizScore + (isAnswerCorrect ? 1 : 0);
 
         if (isAnswerCorrect) {
@@ -173,13 +191,11 @@ export default function ModuleViewer() {
         if (currentQuestionIndex < questions.length - 1) {
             setCurrentQuestionIndex(prev => prev + 1);
         } else {
-            // JIKA SOAL HABIS: Hitung Skor Kompetensi Final & Tembak ke Tabel quiz_results
             setIsSavingProgress(true);
             const token = localStorage.getItem("token");
             const calculatedFinalScore = Math.round((finalCorrectCount / questions.length) * 100);
 
             try {
-                // 1. Simpan nilai ke tabel quiz_results lewat parameter id kelas & id kuis modul
                 await axios.post(
                     `http://127.0.0.1:8000/api/courses/${id}/quizzes/${activeSubModule!.id}/submit`,
                     { score: calculatedFinalScore },
@@ -188,7 +204,6 @@ export default function ModuleViewer() {
 
                 setQuizSubmitted(true);
 
-                // 2. Kirim progres centang hijau ke backend
                 await axios.post(`http://127.0.0.1:8000/api/courses/sub-module/${activeSubModule!.id}/complete`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -328,7 +343,6 @@ export default function ModuleViewer() {
                                     <h2 className="text-sm md:text-base font-bold text-slate-900 mt-1 tracking-tight break-words">{activeSubModule.title}</h2>
                                 </div>
 
-                                {/* BUTTON MANUAL SELESAI BELAJAR */}
                                 {!checkIsCompleted(activeSubModule.isCompleted) && ['PDF', 'PPT', 'Video'].includes(activeSubModule.type) && (
                                     <button
                                         onClick={() => markMaterialAsComplete(activeSubModule.id)}
@@ -343,7 +357,6 @@ export default function ModuleViewer() {
 
                             <div className="flex-1 w-full bg-slate-50 rounded-lg md:rounded-xl overflow-hidden border border-slate-200/60 flex flex-col justify-center items-center relative min-h-[300px] sm:min-h-[400px]">
                                 
-                                {/* KONDISI RENDER VIDEO PEMBELAJARAN */}
                                 {activeSubModule.type === 'Video' && (
                                     <video 
                                         key={activeSubModule.id}
@@ -354,7 +367,6 @@ export default function ModuleViewer() {
                                     />
                                 )}
 
-                                {/* KONDISI RENDER DOKUMEN PDF */}
                                 {activeSubModule.type === 'PDF' && (
                                     <iframe 
                                         key={activeSubModule.id}
@@ -364,7 +376,6 @@ export default function ModuleViewer() {
                                     />
                                 )}
 
-                                {/* KONDISI RENDER PRESENTASI PPT */}
                                 {activeSubModule.type === 'PPT' && (
                                     <iframe 
                                         key={activeSubModule.id}
@@ -375,45 +386,85 @@ export default function ModuleViewer() {
                                     />
                                 )}
 
-                                {/* KONDISI RENDER SOAL KUIS (FULL DINAMIS) */}
                                 {activeSubModule.type === 'Kuis' && (
-                                    <div className="w-full max-w-xl p-4 sm:p-8 bg-white rounded-xl shadow-xs border text-left my-2 sm:my-4 mx-auto">
+                                    <div className="w-full max-w-2xl p-4 sm:p-6 bg-white rounded-xl shadow-xs border text-left my-2 sm:my-4 mx-auto max-h-[500px] overflow-y-auto">
                                         {questions.length === 0 ? (
                                             <div className="text-center py-6 text-xs font-medium text-slate-400">
                                                 Evaluasi kuis ini belum dikonfigurasi bank soal oleh instruktur.
                                             </div>
                                         ) : (
-    // Kita buat logic pengecekan di sini
-    (!checkIsCompleted(activeSubModule.isCompleted) || 
-    (checkIsCompleted(activeSubModule.isCompleted) && (activeSubModule.user_quiz_score || 0) < 70)) 
-    && !quizSubmitted && currentQuestion
-) ? (
+                                            (!checkIsCompleted(activeSubModule.isCompleted) || 
+                                            (checkIsCompleted(activeSubModule.isCompleted) && (activeSubModule.user_quiz_score || 0) < 70)) 
+                                            && !quizSubmitted && currentQuestion
+                                        ) ? (
                                             <>
-                                                <div className="mb-3 flex justify-between items-center text-[10px] font-bold text-indigo-600 font-mono">
+                                                <div className="mb-3 flex justify-between items-center text-[10px] font-bold text-indigo-600 font-mono border-b border-slate-100 pb-2">
                                                     <span>PERTANYAAN {currentQuestionIndex + 1} DARI {questions.length}</span>
                                                 </div>
                                                 
-                                                <h3 className="font-bold text-xs sm:text-sm text-slate-900 mb-4 leading-relaxed">
+                                                <h3 className="font-bold text-xs sm:text-sm text-slate-900 mb-3 leading-relaxed">
                                                     Soal Evaluasi: {currentQuestion.question}
                                                 </h3>
+
+                                                {/* RENDERING GAMBAR SOAL UTAMA LOKAL */}
+                                                {currentQuestion.question_image && (
+                                                    <div className="mb-4 bg-slate-50 border border-slate-200 rounded-xl p-2 flex justify-center">
+                                                        <img 
+                                                            src={currentQuestion.question_image} 
+                                                            alt="Gambar Soal Kuis" 
+                                                            className="max-h-48 object-contain rounded-lg shadow-2xs"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                            }}
+                                                        />
+                                                    </div>
+                                                )}
                                                 
-                                                <div className="space-y-2.5">
-                                                    {['a', 'b', 'c', 'd'].map((key) => {
-                                                        const optionText = currentQuestion[key as keyof QuizQuestion];
-                                                        if (!optionText) return null;
-                                                        
+                                                {/* GRID VIEW UTK JAWABAN TEXT / GAMBAR */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                                                    {(['a', 'b', 'c', 'd'] as const).map((key) => {
+                                                        const optionData = currentQuestion.options?.[key] || (currentQuestion as any)[key];
+                                                        if (!optionData) return null;
+
+                                                        const hasImage = typeof optionData === 'object' && optionData.image;
+                                                        const optionText = typeof optionData === 'object' ? optionData.text : optionData;
+                                                        const optionImageUrl = typeof optionData === 'object' ? optionData.image : null;
+
                                                         return (
-                                                            <label key={key} className={`w-full p-3 border rounded-xl flex items-center gap-3 cursor-pointer text-xs font-medium transition ${selectedAnswer === key ? 'border-indigo-600 bg-indigo-50/50 text-indigo-700 font-semibold' : 'hover:bg-slate-50 text-slate-600'}`}>
-                                                                <input 
-                                                                    type="radio" 
-                                                                    name="quiz-opt" 
-                                                                    value={key}
-                                                                    checked={selectedAnswer === key} 
-                                                                    onChange={() => setSelectedAnswer(key)} 
-                                                                    className="accent-indigo-600" 
-                                                                />
-                                                                <span className="uppercase font-bold text-slate-400 mr-0.5">{key}.</span>
-                                                                <span className="break-words flex-1">{optionText}</span>
+                                                            <label 
+                                                                key={key} 
+                                                                className={`w-full p-3 border rounded-xl flex flex-col gap-2.5 cursor-pointer text-xs font-medium transition shadow-2xs ${
+                                                                    selectedAnswer === key 
+                                                                        ? 'border-indigo-600 bg-indigo-50/40 text-indigo-700 font-semibold ring-1 ring-indigo-600/30' 
+                                                                        : 'hover:bg-slate-50 bg-white text-slate-600 border-slate-200'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-start gap-2">
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name="quiz-opt" 
+                                                                        value={key}
+                                                                        checked={selectedAnswer === key} 
+                                                                        onChange={() => setSelectedAnswer(key)} 
+                                                                        className="accent-indigo-600 mt-0.5" 
+                                                                    />
+                                                                    <span className="uppercase font-bold text-slate-400 font-mono">{key}.</span>
+                                                                    <span className="break-words flex-1 text-[11px] leading-tight">{optionText || <span className="text-slate-300 italic">Pilihan Bergambar</span>}</span>
+                                                                </div>
+
+                                                                {/* RENDERING GAMBAR PILIHAN JAWABAN LOKAL */}
+                                                                {hasImage && optionImageUrl && (
+                                                                    <div className="w-full h-28 bg-slate-50 border border-slate-100 rounded-lg overflow-hidden flex items-center justify-center mt-1">
+                                                                        <img 
+                                                                            src={optionImageUrl} 
+                                                                            alt={`Opsi ${key.toUpperCase()}`} 
+                                                                            className="w-full h-full object-cover"
+                                                                            onError={(e) => {
+                                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                )}
                                                             </label>
                                                         );
                                                     })}
@@ -422,53 +473,52 @@ export default function ModuleViewer() {
                                                 <button 
                                                     onClick={handleNextQuizQuestion}
                                                     disabled={!selectedAnswer || isSavingProgress}
-                                                    className="mt-6 w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center cursor-pointer"
+                                                    className="mt-5 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs h-9 rounded-xl shadow-md transition flex items-center justify-center cursor-pointer"
                                                 >
                                                     {currentQuestionIndex === questions.length - 1 ? "Kirim Semua Jawaban" : "Pertanyaan Selanjutnya →"}
                                                 </button>
                                             </>
                                         ) : (
-                                           <div className="p-2 text-center space-y-4">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold mb-4 ${ 
-            (quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 
-            ? 'bg-emerald-50 text-emerald-600' 
-            : 'bg-amber-50 text-amber-600'
-        }`}>
-            {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 ? '✓' : '!'}
-        </div>
-        
-        <div>
-            <h4 className="font-bold text-sm text-slate-900">
-                {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 
-                    ? "Evaluasi Selesai Dilaksanakan!" 
-                    : "Hasil Evaluasi Kurang"}
-            </h4>
-            <p className="text-[11px] text-slate-400 mt-1">
-                {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 
-                    ? "Seluruh data jawaban telah terekam aman." 
-                    : "Skor Anda di bawah KKM (70). Silakan lakukan remedial untuk memperbaiki nilai."}
-            </p>
-        </div>
+                                            <div className="p-2 text-center space-y-4">
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold mb-4 ${ 
+                                                    (quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 
+                                                    ? 'bg-emerald-50 text-emerald-600' 
+                                                    : 'bg-amber-50 text-amber-600'
+                                                }`}>
+                                                    {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 ? '✓' : '!'}
+                                                </div>
+                                                
+                                                <div>
+                                                    <h4 className="font-bold text-sm text-slate-900">
+                                                        {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 
+                                                            ? "Evaluasi Selesai Dilaksanakan!" 
+                                                            : "Hasil Evaluasi Kurang"}
+                                                    </h4>
+                                                    <p className="text-[11px] text-slate-400 mt-1">
+                                                        {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) >= 70 
+                                                            ? "Seluruh data jawaban telah terekam aman." 
+                                                            : "Skor Anda di bawah KKM (70). Silakan lakukan remedial untuk memperbaiki nilai."}
+                                                    </p>
+                                                </div>
 
-    <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono text-xs font-bold text-indigo-600 inline-block mb-4">
-            SKOR ANDA: {quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)} / 100
-        </div>
+                                                <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono text-xs font-bold text-indigo-600 inline-block mb-4">
+                                                    SKOR ANDA: {quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)} / 100
+                                                </div>
 
-        {/* 👇 TOMBOL REMEDIAL YANG BENAR (DIBUNGKUS BUTTON) */}
-        {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) < 70 && (
-            <button 
-                onClick={() => { 
-                    setQuizSubmitted(false); 
-                    setQuizScore(0); 
-                    setCurrentQuestionIndex(0); 
-                    setSelectedAnswer("");
-                }}
-                className="block mx-auto px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
-            >
-                Mulai Remedial
-            </button>
-)}
-</div>
+                                                {(quizSubmitted ? Math.round((quizScore / questions.length) * 100) : (activeSubModule.user_quiz_score || 0)) < 70 && (
+                                                    <button 
+                                                        onClick={() => { 
+                                                            setQuizSubmitted(false); 
+                                                            setQuizScore(0); 
+                                                            setCurrentQuestionIndex(0); 
+                                                            setSelectedAnswer("");
+                                                        }}
+                                                        className="block mx-auto px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
+                                                    >
+                                                        Mulai Remedial
+                                                    </button>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 )}
