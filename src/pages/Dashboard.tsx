@@ -16,6 +16,7 @@ import {
     Clock,
 
     Trash2,
+    KeyRound,
     UserPlus // 👈 TAMBAHKAN IKON USERPLUS UNTUK REGISTRASI MASSAL
 } from "lucide-react";
 
@@ -125,19 +126,30 @@ export default function Dashboard() {
                     </div>
                 </div>
                 
-                <div className="flex items-center gap-3.5">
-                    <div className="flex items-center gap-2 bg-slate-100/80 border border-slate-200/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">
-                        <UserIcon size={14} className="text-slate-400" />
-                        <span className="capitalize">{user?.name}</span>
-                    </div>
-                    <button 
-                        onClick={handleLogout}
-                        className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
-                        title="Keluar Aplikasi"
-                    >
-                        <LogOut size={16} />
-                    </button>
-                </div>
+               {/* AKSI KANAN NAVBAR */}
+<div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-2 bg-slate-100/80 border border-slate-200/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">
+        <UserIcon size={14} className="text-slate-400" />
+        <span className="capitalize">{user?.name}</span>
+    </div>
+
+    {/* 👇 CUKUP TEMPEL KODE TOMBOL INI DI ATAS TOMBOL LOGOUT KAMU */}
+    <button 
+        onClick={() => navigate("/dashboard/change-password")}
+        className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-100/50 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+        title="Ganti Password Akun"
+    >
+        <KeyRound size={16} />
+    </button>
+
+    <button 
+        onClick={handleLogout}
+        className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+        title="Keluar Aplikasi"
+    >
+        <LogOut size={16} />
+    </button>
+</div>
             </nav>
 
             {/* MAIN PORTAL WRAPPER */}

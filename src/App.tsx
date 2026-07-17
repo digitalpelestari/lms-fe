@@ -8,12 +8,15 @@ import Dashboard from './pages/Dashboard';
 import CreateCourse from './pages/CreateCourse';
 import ManageCourse from './pages/ManageCourse';
 import BulkRegister from './pages/BulkRegister';
+import ChangePassword from './pages/ChangePassword';
+
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard/change-password" element={<ChangePassword />} />
 
         {/* Rute Sisi Siswa / Peserta */}
         <Route path="/" element={<LandingDashboard />} />
@@ -26,6 +29,7 @@ function App() {
         <Route path="/instructor/create-course" element={<CreateCourse />} />
         <Route path="/instructor/manage-course/:id" element={<ManageCourse />} />
         <Route path="/instructor/register-bulk" element={<BulkRegister />} />
+        
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

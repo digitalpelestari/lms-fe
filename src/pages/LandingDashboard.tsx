@@ -94,7 +94,7 @@ export default function LandingDashboard() {
                 <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white min-h-[360px] flex items-center p-8 md:p-12 shadow-xl">
                     <div className="max-w-xl z-10 relative">
                         <div className="flex gap-2 mb-4">
-                            <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded text-xs font-semibold">KEMENHUB COMPLIANT</span>
+                            <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded text-xs font-semibold">Pelatihan</span>
                             <span className="bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded text-xs font-semibold">STANDAR K3</span>
                         </div>
                         <h1 className="text-xs font-bold uppercase tracking-wider text-indigo-200">Learning Management System (LMS)</h1>
