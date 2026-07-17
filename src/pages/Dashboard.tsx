@@ -50,7 +50,7 @@ export default function Dashboard() {
 
         const fetchCourses = async () => {
             try {
-                const response = await axiosInstance.get("http://api.pelestari.id/api/courses", {
+                const response = await axiosInstance.get("https://api.pelestari.id/api/courses", {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setCourses(response.data);
@@ -74,7 +74,7 @@ export default function Dashboard() {
         if (window.confirm(`Apakah Anda yakin ingin menghapus kelas "${courseTitle}" beserta seluruh berkas & silabus di dalamnya secara permanen?`)) {
             const token = localStorage.getItem("token");
             try {
-                await axiosInstance.delete(`http://127.0.0.1:8000/api/courses/${courseId}`, {
+                await axiosInstance.delete(`https://127.0.0.1:8000/api/courses/${courseId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert("🎉 Kelas beserta berkas presentasi berhasil dihapus!");

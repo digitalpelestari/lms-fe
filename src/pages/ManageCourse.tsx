@@ -97,7 +97,7 @@ export default function ManageCourse() {
 
     const fetchManagementData = () => {
         const token = localStorage.getItem("token");
-        const url = `http://api.pelestari.id/api/courses/${id}/management-details?date=${filterDate}`;
+        const url = `https://api.pelestari.id/api/courses/${id}/management-details?date=${filterDate}`;
         
         axios.get(url, {
             headers: { Authorization: `Bearer ${token}` }
@@ -121,7 +121,7 @@ export default function ManageCourse() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        axios.get(`http://api.pelestari.id/api/courses/${id}`, {
+        axios.get(`https://api.pelestari.id/api/courses/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         }).then(res => setCourseTitle(res.data.title));
 
@@ -138,7 +138,7 @@ export default function ManageCourse() {
         setSuccessMessage('');
 
         try {
-            await axios.post(`http://api.pelestari.id/api/topic-groups`, 
+            await axios.post(`https://api.pelestari.id/api/topic-groups`, 
                 { course_id: id, title: newBabTitle },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -158,7 +158,7 @@ export default function ManageCourse() {
             setErrorMessage('');
             setSuccessMessage('');
             try {
-                await axios.delete(`http://api.pelestari.id/api/topic-groups/${groupId}`, {
+                await axios.delete(`https://api.pelestari.id/api/topic-groups/${groupId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setSuccessMessage("🎉 Bab kelompok topik berhasil dihapus dari silabus!");
@@ -176,7 +176,7 @@ export default function ManageCourse() {
             setErrorMessage('');
             setSuccessMessage('');
             try {
-                await axios.delete(`http://api.pelestari.id/api/materials/${materialId}`, {
+                await axios.delete(`https://api.pelestari.id/api/materials/${materialId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setSuccessMessage("🎉 Materi silabus berhasil dihapus!");

@@ -32,7 +32,7 @@ export default function LandingDashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        axios.get('http://api.pelestari.id/api/courses')
+        axios.get('https://api.pelestari.id/api/courses')
             .then(response => {
                 setCourses(response.data);
                 setIsLoading(false);

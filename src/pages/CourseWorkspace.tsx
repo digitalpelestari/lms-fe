@@ -47,7 +47,7 @@ export default function CourseWorkspace() {
     useEffect(() => {
         const token = localStorage.getItem("token");
         
-        axios.get(`http://api.pelestari.id/api/courses/${id}`, {
+        axios.get(`https://api.pelestari.id/api/courses/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {

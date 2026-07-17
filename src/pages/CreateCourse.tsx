@@ -46,7 +46,7 @@ export default function CreateCourse() {
         }
 
         try {
-            const response = await axios.post('http://api.pelestari.id/api/courses', formData, {
+            const response = await axios.post('https://api.pelestari.id/api/courses', formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data' // Header wajib untuk unggah file

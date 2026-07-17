@@ -37,7 +37,7 @@ export default function ChangePassword() {
         try {
             // Menggunakan URL API lokal biasa sama seperti di dashboard kamu
             const response = await axios.post(
-                "http://api.pelestari.id/api/change-password", 
+                "https://api.pelestari.id/api/change-password", 
                 formData,
                 {
                     headers: {

@@ -82,7 +82,7 @@ export default function ModuleViewer() {
 
     const fetchCourseData = () => {
         const token = localStorage.getItem("token");
-        axios.get(`http://api.pelestari.id/api/courses/${id}`, {
+        axios.get(`https://api.pelestari.id/api/courses/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
@@ -95,7 +95,7 @@ export default function ModuleViewer() {
                 subModules: (group.sub_modules || group.subModules || []).map((sub: any) => {
                     const finalUrl = sub.type === 'PPT'
                         ? sub.file_url
-                        : (sub.type !== 'Kuis' ? `http://127.0.0.1:8000/api/materials/stream/${sub.id}` : sub.file_url);
+                        : (sub.type !== 'Kuis' ? `https://127.0.0.1:8000/api/materials/stream/${sub.id}` : sub.file_url);
 
                     return {
                         ...sub,
@@ -197,14 +197,14 @@ export default function ModuleViewer() {
 
             try {
                 await axios.post(
-                    `http://api.pelestari.id/api/courses/${id}/quizzes/${activeSubModule!.id}/submit`,
+                    `https://api.pelestari.id/api/courses/${id}/quizzes/${activeSubModule!.id}/submit`,
                     { score: calculatedFinalScore },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
                 setQuizSubmitted(true);
 
-                await axios.post(`http://api.pelestari.id/api/courses/sub-module/${activeSubModule!.id}/complete`, {}, {
+                await axios.post(`https://api.pelestari.id/api/courses/sub-module/${activeSubModule!.id}/complete`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -379,7 +379,7 @@ export default function ModuleViewer() {
                                 {activeSubModule.type === 'PPT' && (
                                     <iframe 
                                         key={activeSubModule.id}
-                                        src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(activeSubModule.file_url || '')}`} 
+                                        src={`httpss://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(activeSubModule.file_url || '')}`} 
                                         className="w-full h-full min-h-[320px] sm:min-h-[450px] border-none flex-1 bg-white"
                                         title={activeSubModule.title}
                                         frameBorder="0"

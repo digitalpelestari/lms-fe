@@ -28,7 +28,7 @@ export default function App() {
 
         try {
             // 1. Tembak API Login ke Backend Laravel menggunakan payload nik
-            const response = await axios.post('http://api.pelestari.id/api/login', {
+            const response = await axios.post('https://api.pelestari.id/api/login', {
                 nik: nik,
                 password: password
             });
