@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "axios"; // Gunakan axios biasa sesuai setup kamu
+import axiosInstance from "axios"; 
 import { 
     BookOpen, 
     LogOut, 
     User as UserIcon, 
     GraduationCap, 
     Plus, 
-     
     FileText, 
     Settings,
     Search,
     Bookmark,
     CheckCircle,
     Clock,
-
     Trash2,
     KeyRound,
-    UserPlus // 👈 TAMBAHKAN IKON USERPLUS UNTUK REGISTRASI MASSAL
+    UserPlus 
 } from "lucide-react";
 
 interface Course {
@@ -74,7 +72,8 @@ export default function Dashboard() {
         if (window.confirm(`Apakah Anda yakin ingin menghapus kelas "${courseTitle}" beserta seluruh berkas & silabus di dalamnya secara permanen?`)) {
             const token = localStorage.getItem("token");
             try {
-                await axiosInstance.delete(`https://127.0.0.1:8000/api/courses/${courseId}`, {
+                // 🛠️ FIX: Mengubah URL lokal menjadi URL Production agar bisa dihapus lewat HP
+                await axiosInstance.delete(`https://api.pelestari.id/api/courses/${courseId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 alert("🎉 Kelas beserta berkas presentasi berhasil dihapus!");
@@ -110,81 +109,80 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-slate-50/60 font-sans antialiased text-slate-800 flex flex-col">
             
-            {/* 1. PROFESSIONAL TOP NAVBAR */}
-            <nav className="bg-white border-b border-slate-200/80 px-6 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow-xs">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-indigo-200">
-                        <GraduationCap size={20} />
+            {/* 1. PROFESSIONAL TOP NAVBAR (RESPONSIF) */}
+            <nav className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 sm:py-3.5 flex justify-between items-center sticky top-0 z-40 shadow-xs">
+                {/* Bagian Kiri: Logo & Title */}
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 pr-2">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-indigo-200 flex-shrink-0">
+                        <GraduationCap size={18} className="sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                        <span className="font-bold text-sm tracking-tight text-slate-900 block leading-tight">
-                            Learning Management System Pelestari
+                    <div className="min-w-0">
+                        <span className="font-bold text-xs sm:text-sm tracking-tight text-slate-900 block leading-tight truncate">
+                            LMS Pelestari
                         </span>
-                        <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md font-mono tracking-wider uppercase mt-0.5 inline-block">
-                            {isInstructor ? `Instructor Node • ${userLevel}` : `Student Hub • ${userLevel}`}
+                        <span className="text-[9px] sm:text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md font-mono tracking-wider uppercase mt-0.5 inline-block truncate">
+                            {isInstructor ? `Instructor • ${userLevel}` : `Student • ${userLevel}`}
                         </span>
                     </div>
                 </div>
                 
-               {/* AKSI KANAN NAVBAR */}
-<div className="flex items-center gap-2.5">
-    <div className="flex items-center gap-2 bg-slate-100/80 border border-slate-200/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">
-        <UserIcon size={14} className="text-slate-400" />
-        <span className="capitalize">{user?.name}</span>
-    </div>
+                {/* Bagian Kanan: Aksi User */}
+                <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+                    <div className="hidden sm:flex items-center gap-2 bg-slate-100/80 border border-slate-200/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">
+                        <UserIcon size={14} className="text-slate-400" />
+                        <span className="capitalize">{user?.name}</span>
+                    </div>
 
-    {/* 👇 CUKUP TEMPEL KODE TOMBOL INI DI ATAS TOMBOL LOGOUT KAMU */}
-    <button 
-        onClick={() => navigate("/dashboard/change-password")}
-        className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-100/50 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
-        title="Ganti Password Akun"
-    >
-        <KeyRound size={16} />
-    </button>
+                    <button 
+                        onClick={() => navigate("/dashboard/change-password")}
+                        className="p-1.5 sm:p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-100/50 rounded-lg sm:rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+                        title="Ganti Password Akun"
+                    >
+                        <KeyRound size={14} className="sm:w-4 sm:h-4" />
+                    </button>
 
-    <button 
-        onClick={handleLogout}
-        className="p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
-        title="Keluar Aplikasi"
-    >
-        <LogOut size={16} />
-    </button>
-</div>
+                    <button 
+                        onClick={handleLogout}
+                        className="p-1.5 sm:p-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg sm:rounded-xl transition-colors flex items-center justify-center cursor-pointer"
+                        title="Keluar Aplikasi"
+                    >
+                        <LogOut size={14} className="sm:w-4 sm:h-4" />
+                    </button>
+                </div>
             </nav>
 
             {/* MAIN PORTAL WRAPPER */}
-            <div className="max-w-7xl w-full mx-auto px-6 py-8 flex-1 flex flex-col gap-8">
+            <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col gap-6 sm:gap-8">
                 
                 {/* 2. WELCOME BANNER HEADLINE */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white border border-slate-200/60 rounded-2xl p-6 shadow-xs">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white border border-slate-200/60 rounded-2xl p-5 sm:p-6 shadow-xs">
                     <div>
-                        <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
-                            Selamat Datang Kembali, {user?.name}!
+                        <h1 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 tracking-tight">
+                            Selamat Datang Kembali, <span className="capitalize">{user?.name}</span>!
                         </h1>
-                        <p className="text-xs text-slate-400 mt-1 font-medium">
+                        <p className="text-[11px] sm:text-xs text-slate-400 mt-1 font-medium leading-relaxed">
                             {isInstructor 
                                 ? `Panel manajemen kurikulum, alokasi kelas hirarki ${userLevel}, dan pemantauan kelulusan pengemudi B3.` 
                                 : `Akses silabus Micro Learning Anda untuk modul kepatuhan regulasi Kemenhub level ${userLevel}.`}
                         </p>
                     </div>
                     
-                    {/* 👇 SEKSI TOMBOL UTAMA UNTUK INSTRUKTUR */}
+                    {/* SEKSI TOMBOL UTAMA UNTUK INSTRUKTUR (Melar Penuh di HP) */}
                     {isInstructor && (
-                        <div className="flex items-center gap-2 self-start md:self-auto">
-                            {/* TOMBOL BARU: NAVIGASI KE HALAMAN REGISTRASI MASSAL */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 lg:mt-0 w-full lg:w-auto">
                             <button
                                 onClick={() => navigate("/instructor/register-bulk")}
-                                className="h-10 px-4 bg-white hover:bg-slate-50 text-indigo-650 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs flex items-center gap-2 transition-all cursor-pointer"
+                                className="h-10 px-4 bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto"
                             >
-                                <UserPlus size={15} className="text-indigo-600" />
+                                <UserPlus size={15} className="text-indigo-600 flex-shrink-0" />
                                 Registrasi Peserta
                             </button>
 
                             <button 
                                 onClick={() => navigate("/instructor/create-course")}
-                                className="h-10 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-indigo-100 transition-all cursor-pointer"
+                                className="h-10 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-100 transition-all cursor-pointer w-full sm:w-auto"
                             >
-                                <Plus size={15} />
+                                <Plus size={15} className="flex-shrink-0" />
                                 Buat Kelas Baru
                             </button>
                         </div>
@@ -193,26 +191,26 @@ export default function Dashboard() {
 
                 {/* 3. ANALYTICS QUICK STATS CARD (Hanya Pelajar) */}
                 {isStudent && (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                         <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4 shadow-xs">
                             <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 flex-shrink-0"><Bookmark size={18} /></div>
                             <div>
-                                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Kelas Tersedia ({userLevel})</span>
-                                <span className="text-xl font-extrabold text-slate-900 leading-tight">{filteredCourses.length} Kelas</span>
+                                <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Kelas Tersedia</span>
+                                <span className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">{filteredCourses.length} Kelas</span>
                             </div>
                         </div>
                         <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4 shadow-xs">
                             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 flex-shrink-0"><CheckCircle size={18} /></div>
                             <div>
-                                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Selesai Uji</span>
-                                <span className="text-xl font-extrabold text-slate-900 leading-tight">85% Progres</span>
+                                <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Selesai Uji</span>
+                                <span className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">85% Progres</span>
                             </div>
                         </div>
                         <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4 shadow-xs">
                             <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 flex-shrink-0"><Clock size={18} /></div>
                             <div>
-                                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Level</span>
-                                <span className="text-xl font-extrabold text-amber-600 leading-tight font-mono uppercase">{userLevel}</span>
+                                <span className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Level</span>
+                                <span className="text-lg sm:text-xl font-extrabold text-amber-600 leading-tight font-mono uppercase">{userLevel}</span>
                             </div>
                         </div>
                     </div>
@@ -221,9 +219,9 @@ export default function Dashboard() {
                 {/* ================= VIEWPORT COMPONENT: PELAJAR ================= */}
                 {isStudent && (
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200 pb-3">
                             <h2 className="text-sm font-bold text-slate-900 tracking-wider uppercase flex items-center gap-2">
-                                <BookOpen size={16} className="text-indigo-600" />
+                                <BookOpen size={16} className="text-indigo-600 flex-shrink-0" />
                                 Kelas Pelatihan Tingkat {userLevel}
                             </h2>
                             
@@ -240,16 +238,16 @@ export default function Dashboard() {
                         </div>
                         
                         {filteredCourses.length === 0 ? (
-                            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center text-slate-400 text-xs font-medium shadow-2xs">
+                            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-8 sm:p-12 text-center text-slate-400 text-xs font-medium shadow-2xs">
                                 Tidak ada kelas pelatihan level {userLevel} yang cocok dengan kata kunci "{searchQuery}".
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {filteredCourses.map((course) => (
                                     <div 
                                         key={course.id} 
                                         onClick={() => navigate(`/course/${course.id}`)}
-                                        className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs hover:shadow-md hover:border-indigo-500 transition-all duration-200 cursor-pointer flex flex-col justify-between group"
+                                        className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-indigo-500 transition-all duration-200 cursor-pointer flex flex-col justify-between group"
                                     >
                                         <div>
                                             <div className={`text-[9px] font-bold tracking-widest font-mono px-2 py-0.5 rounded-md inline-block mb-2 uppercase ${
@@ -265,8 +263,8 @@ export default function Dashboard() {
                                             </p>
                                         </div>
                                         <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-medium">
-                                            <span>Lecturer: {course.instructor_name || course.instructor || "Tim Teknis"}</span>
-                                            <span className="text-indigo-600 font-bold tracking-tight">Buka Kelas →</span>
+                                            <span className="truncate pr-2">Lecturer: {course.instructor_name || course.instructor || "Tim Teknis"}</span>
+                                            <span className="text-indigo-600 font-bold tracking-tight flex-shrink-0">Buka Kelas →</span>
                                         </div>
                                     </div>
                                 ))}
@@ -280,28 +278,28 @@ export default function Dashboard() {
                     <div className="flex flex-col gap-4">
                         <div className="border-b border-slate-200 pb-3">
                             <h2 className="text-sm font-bold text-slate-900 tracking-wider uppercase flex items-center gap-2">
-                                <Settings size={16} className="text-indigo-600" />
+                                <Settings size={16} className="text-indigo-600 flex-shrink-0" />
                                 Manajemen Kelas Aktif Anda
                             </h2>
                         </div>
                         
                         {courses.length === 0 ? (
-                            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center text-slate-400 text-xs font-medium shadow-2xs">
+                            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-8 sm:p-12 text-center text-slate-400 text-xs font-medium shadow-2xs">
                                 Anda belum membuat kelas pelatihan apa pun. Klik "Buat Kelas Baru" untuk memulai.
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {courses.map((course) => (
                                     <div 
                                         key={course.id} 
-                                        className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col justify-between"
+                                        className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between"
                                     >
                                         <div>
-                                            <div className="flex items-center gap-1.5 mb-2">
-                                                <div className="text-[9px] font-bold tracking-widest font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md inline-block uppercase">
+                                            <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                                                <div className="text-[9px] font-bold tracking-widest font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md uppercase">
                                                     Instructor Module
                                                 </div>
-                                                <div className={`text-[9px] font-bold tracking-widest font-mono px-2 py-0.5 rounded-md inline-block uppercase border ${
+                                                <div className={`text-[9px] font-bold tracking-widest font-mono px-2 py-0.5 rounded-md uppercase border ${
                                                     course.level === 'AKBB' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
                                                 }`}>
                                                     Target: {course.level}
@@ -315,27 +313,28 @@ export default function Dashboard() {
                                             </p>
                                         </div>
                                         
-                                        <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
-                                            <div className="grid grid-cols-3 gap-2">
+                                        <div className="pt-3 border-t border-slate-100">
+                                            {/* Optimasi grid tombol aksi di HP agar tidak terlalu sempit */}
+                                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                                                 <button 
                                                     onClick={() => navigate(`/course/${course.id}`)}
-                                                    className="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
+                                                    className="py-1.5 px-1 sm:px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
                                                 >
-                                                    <FileText size={12} />
+                                                    <FileText size={12} className="hidden sm:block" />
                                                     Silabus
                                                 </button>
                                                 <button 
                                                     onClick={() => navigate(`/instructor/manage-course/${course.id}`)}
-                                                    className="py-1.5 px-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-xl transition text-center cursor-pointer shadow-sm"
+                                                    className="py-1.5 px-1 sm:px-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition text-center cursor-pointer shadow-sm"
                                                 >
                                                     Kelola
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDeleteCourse(course.id, course.title)}
-                                                    className="py-1.5 px-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 text-[11px] font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
+                                                    className="py-1.5 px-1 sm:px-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
                                                     title="Hapus Kelas Permanen"
                                                 >
-                                                    <Trash2 size={12} />
+                                                    <Trash2 size={12} className="hidden sm:block" />
                                                     Hapus
                                                 </button>
                                             </div>
