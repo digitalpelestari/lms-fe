@@ -188,6 +188,7 @@ export default function ManageCourse() {
         }
     };
 
+    // 🚀 UPDATE: Menerima semua ukuran file tanpa batasan (Losss!)
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setSelectedFile(e.target.files[0]);
@@ -279,7 +280,9 @@ export default function ManageCourse() {
         }
 
         try {
+            // 🛠️ UPDATE: Ditambahkan timeout: 0 agar browser sabar menunggu upload file raksasa (100MB+)
             await axios.post(`https://api.pelestari.id/api/courses/${id}/materials`, formData, {
+                timeout: 0, 
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -339,29 +342,29 @@ export default function ManageCourse() {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col">
             
-            {/* TOP BAR */}
-            <header className="bg-white border-b border-slate-200 h-14 px-6 flex items-center justify-between shadow-xs sticky top-0 z-50">
-                <div className="flex items-center gap-3 min-w-0">
+            {/* TOP BAR (RESPONSIF MOBILE) */}
+            <header className="bg-white border-b border-slate-200 h-14 px-4 sm:px-6 flex items-center justify-between shadow-xs sticky top-0 z-50">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <button 
                         onClick={() => navigate('/dashboard')}
-                        className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center justify-center cursor-pointer"
+                        className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center justify-center cursor-pointer flex-shrink-0"
                     >
                         <ArrowLeft size={16} />
                     </button>
-                    <h1 className="text-xs md:text-sm font-bold text-slate-900 tracking-tight uppercase truncate">
+                    <h1 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight uppercase truncate">
                         Kelola: {courseTitle || "Struktur Kelas"}
                     </h1>
                 </div>
-                <div className="text-xs font-semibold text-indigo-600 hidden sm:block bg-indigo-50 px-3 py-1 rounded-full">
+                <div className="text-[10px] sm:text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full flex-shrink-0">
                     Workspace Kurikulum
                 </div>
             </header>
 
-            {/* TAB CONTROLLER PANEL */}
-            <div className="max-w-7xl w-full mx-auto px-4 md:px-8 mt-6 flex gap-2 border-b border-slate-200 bg-white pt-4 rounded-t-2xl shadow-xs">
+            {/* TAB CONTROLLER PANEL (Bisa digeser horizontal dengan jari di layar HP) */}
+            <div className="max-w-7xl w-full mx-auto px-4 md:px-8 mt-4 sm:mt-6 flex overflow-x-auto no-scrollbar border-b border-slate-200 bg-white pt-4 rounded-t-2xl shadow-xs">
                 <button
                     onClick={() => setActiveTab('silabus')}
-                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition cursor-pointer ${
+                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition cursor-pointer whitespace-nowrap ${
                         activeTab === 'silabus' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'
                     }`}
                 >
@@ -369,7 +372,7 @@ export default function ManageCourse() {
                 </button>
                 <button
                     onClick={() => setActiveTab('nilai')}
-                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition cursor-pointer ${
+                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition cursor-pointer whitespace-nowrap ${
                         activeTab === 'nilai' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-400 hover:text-slate-600'
                     }`}
                 >
@@ -398,7 +401,7 @@ export default function ManageCourse() {
                     <div className="lg:col-span-5 space-y-6">
                         
                         {/* FORM 1: BUAT BAB BARU */}
-                        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5">
+                        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-4 sm:p-5">
                             <h2 className="text-xs font-bold text-indigo-950 uppercase tracking-wider mb-3 flex items-center gap-2">
                                 <FolderPlus size={15} /> 1. Buat Bab (Kelompok Topik)
                             </h2>
@@ -407,14 +410,14 @@ export default function ManageCourse() {
                                     type="text"
                                     value={newBabTitle}
                                     onChange={(e) => setNewBabTitle(e.target.value)}
-                                    placeholder="Contoh: Bab 1 - Regulasi B3 Kemenhub"
-                                    className="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-indigo-600 bg-slate-50/50"
+                                    placeholder="Contoh: Bab 1 - Regulasi B3"
+                                    className="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-indigo-600 bg-slate-50/50 min-w-0"
                                     disabled={isCreatingBab}
                                 />
                                 <button
                                     type="submit"
                                     disabled={!newBabTitle.trim() || isCreatingBab}
-                                    className="px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center cursor-pointer"
+                                    className="px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center cursor-pointer flex-shrink-0"
                                 >
                                     <Plus size={14} className="mr-1" /> Bab
                                 </button>
@@ -422,7 +425,7 @@ export default function ManageCourse() {
                         </div>
 
                         {/* FORM 2: UNGGAH MATERI / INPUT KUIS MODUL */}
-                        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5">
+                        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-4 sm:p-5">
                             <h2 className="text-xs font-bold text-indigo-950 uppercase tracking-wider mb-4 flex items-center gap-2">
                                 <Upload size={15} /> 2. Unggah Materi Modul
                             </h2>
@@ -433,7 +436,7 @@ export default function ManageCourse() {
                                     <select
                                         value={selectedBabId}
                                         onChange={(e) => setSelectedBabId(e.target.value)}
-                                        className="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer"
+                                        className="w-full p-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 font-medium focus:outline-none focus:border-indigo-600 cursor-pointer text-ellipsis overflow-hidden"
                                         disabled={topicGroups.length === 0}
                                     >
                                         {topicGroups.length === 0 ? (
@@ -486,7 +489,7 @@ export default function ManageCourse() {
                                                 type="file" 
                                                 accept={materialType === 'PDF' ? '.pdf' : materialType === 'PPT' ? '.ppt,.pptx' : 'video/mp4'}
                                                 onChange={handleFileChange} 
-                                                className="text-[11px] text-slate-500 font-medium cursor-pointer"
+                                                className="text-[11px] text-slate-500 font-medium cursor-pointer w-full max-w-[200px] text-center"
                                                 disabled={topicGroups.length === 0}
                                             />
                                         </div>
@@ -494,9 +497,9 @@ export default function ManageCourse() {
                                 )}
 
                                 {materialType === 'Kuis' && (
-                                    <div className="space-y-4 border-t border-slate-100 pt-4 max-h-[500px] overflow-y-auto pr-1">
+                                    <div className="space-y-4 border-t border-slate-100 pt-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto pr-1">
                                         <div className="flex justify-between items-center sticky top-0 bg-white z-10 pb-2">
-                                            <label className="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Daftar Pertanyaan Ujian</label>
+                                            <label className="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Pertanyaan Ujian</label>
                                             <button 
                                                 type="button" 
                                                 onClick={addQuizQuestionRow}
@@ -507,7 +510,7 @@ export default function ManageCourse() {
                                         </div>
 
                                         {quizQuestions.map((q, idx) => (
-                                            <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative shadow-2xs">
+                                            <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative shadow-2xs">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-[10px] font-bold text-slate-500 font-mono">SOAL NO. {idx + 1}</span>
                                                     {quizQuestions.length > 1 && (
@@ -529,15 +532,14 @@ export default function ManageCourse() {
                                                     className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:border-indigo-600"
                                                 />
 
-                                                {/* 👇 TOMBOL CUSTOM UPLOAD GAMBAR SOAL UTAMA */}
-                                                <div className="bg-white p-3 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                                                <div className="bg-white p-3 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
                                                     <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 font-mono uppercase">
-                                                        <ImageIcon size={14} className="text-slate-400" /> Gambar Soal Utama:
+                                                        <ImageIcon size={14} className="text-slate-400 flex-shrink-0" /> Gambar Utama:
                                                     </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60 text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1 shadow-2xs">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <label className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60 text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1 shadow-2xs">
                                                             <Upload size={12} />
-                                                            {q.question_image ? "Ganti Gambar" : "Pilih Gambar"}
+                                                            {q.question_image ? "Ganti" : "Pilih"}
                                                             <input 
                                                                 type="file"
                                                                 accept="image/*"
@@ -546,8 +548,8 @@ export default function ManageCourse() {
                                                             />
                                                         </label>
                                                         {q.question_image && (
-                                                            <span className="text-[10px] font-medium text-emerald-600 truncate max-w-[140px] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                                                                ✓ {q.question_image.name}
+                                                            <span className="text-[9px] font-medium text-emerald-600 truncate max-w-[100px] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                                                                {q.question_image.name}
                                                             </span>
                                                         )}
                                                     </div>
@@ -562,28 +564,26 @@ export default function ManageCourse() {
                                                                     type="text" 
                                                                     value={q[key].text} 
                                                                     onChange={(e) => handleQuizOptionTextChange(idx, key, e.target.value)}
-                                                                    placeholder={`Teks Opsi Jawaban ${key.toUpperCase()}`} 
+                                                                    placeholder={`Opsi ${key.toUpperCase()}`} 
                                                                     className="w-full px-2 py-1 border-b border-slate-100 text-[11px] focus:outline-none"
                                                                 />
                                                             </div>
                                                             
-                                                            {/* 👇 TOMBOL CUSTOM UPLOAD GAMBAR PILIHAN OPSI */}
                                                             <div className="flex items-center justify-between pl-4 pt-1 border-t border-slate-50">
-                                                                <span className="text-[9px] font-bold text-slate-400">Gambar Pilihan {key.toUpperCase()}:</span>
-                                                                <div className="flex items-center gap-2">
+                                                                <span className="text-[9px] font-bold text-slate-400">Gambar {key.toUpperCase()}:</span>
+                                                                <div className="flex items-center gap-1.5">
                                                                     <label className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100/40 text-[9px] font-bold rounded-md cursor-pointer transition flex items-center gap-1">
-                                                                        <ImageIcon size={10} />
-                                                                        {q[key].imageFile ? "Ubah" : "Pilih"}
                                                                         <input 
                                                                             type="file"
                                                                             accept="image/*"
                                                                             onChange={(e) => handleQuizOptionImageChange(idx, key, e.target.files?.[0] || null)}
                                                                             className="hidden" 
                                                                         />
+                                                                        Pilih
                                                                     </label>
                                                                     {q[key].imageFile && (
-                                                                        <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1 py-0.2 rounded-md">
-                                                                            ✓ Aktif
+                                                                        <span className="text-[9px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1 rounded">
+                                                                            ✓
                                                                         </span>
                                                                     )}
                                                                 </div>
@@ -593,7 +593,7 @@ export default function ManageCourse() {
                                                 </div>
 
                                                 <div className="pt-1 flex items-center gap-2">
-                                                    <label className="block text-[9px] font-bold text-slate-500 uppercase font-mono">Kunci Jawaban Benar:</label>
+                                                    <label className="block text-[9px] font-bold text-slate-500 uppercase font-mono">Kunci Jawaban:</label>
                                                     <select 
                                                         value={q.correct_answer} 
                                                         onChange={(e) => handleQuizTextChange(idx, 'correct_answer', e.target.value as any)}
@@ -622,7 +622,7 @@ export default function ManageCourse() {
                                 {isUploadingMaterial && materialType !== 'Kuis' && (
                                     <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl space-y-2">
                                         <div className="flex justify-between items-center text-[10px] font-bold text-indigo-950 font-mono">
-                                            <span className="animate-pulse">Mengirim berkas ke Storage R2...</span>
+                                            <span className="animate-pulse">Mengirim berkas ke R2...</span>
                                             <span>{uploadProgress}%</span>
                                         </div>
                                         <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
@@ -638,7 +638,7 @@ export default function ManageCourse() {
                     </div>
 
                     {/* PANEL KANAN: PREVIEW STRUKTUR SILABUS */}
-                    <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl shadow-xs p-5 md:p-6 min-h-[400px]">
+                    <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl shadow-xs p-4 sm:p-5 md:p-6 min-h-[300px]">
                         <h2 className="text-xs font-bold text-indigo-950 uppercase tracking-wider mb-4 pb-2 border-b flex items-center gap-2">
                             <BookOpen size={15} className="text-indigo-600" /> Review Struktur Silabus Terbit
                         </h2>
@@ -650,10 +650,10 @@ export default function ManageCourse() {
                         ) : (
                             <div className="space-y-4">
                                 {topicGroups.map((group) => (
-                                    <div key={group.id} className="border border-slate-100 rounded-xl bg-slate-50/60 p-3.5">
-                                        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight flex items-center justify-between">
+                                    <div key={group.id} className="border border-slate-100 rounded-xl bg-slate-50/60 p-3 sm:p-3.5">
+                                        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight flex items-center justify-between min-w-0">
                                             <span className="truncate pr-2">{group.title}</span>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
+                                            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                                                 <span className="text-[9px] px-1.5 py-0.5 bg-indigo-50 border text-indigo-600 font-mono rounded-md">
                                                     {group.materials?.length || 0} Modul
                                                 </span>
@@ -674,20 +674,19 @@ export default function ManageCourse() {
                                                 {group.materials.map((mat) => (
                                                     <div 
                                                         key={mat.id} 
-                                                        className="bg-white border border-slate-100 rounded-lg p-2 flex items-center justify-between text-[11px] font-medium text-slate-700 hover:shadow-xs transition"
+                                                        className="bg-white border border-slate-100 rounded-lg p-2 flex items-center justify-between text-[11px] font-medium text-slate-700 hover:shadow-xs transition gap-2"
                                                     >
-                                                        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-                                                            {renderMaterialIcon(mat.type)}
+                                                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                            <div className="flex-shrink-0">{renderMaterialIcon(mat.type)}</div>
                                                             <span className="truncate">{mat.title}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                                            <div className="text-[9px] font-bold text-slate-400 font-mono uppercase bg-slate-50 px-1.5 py-0.5 border rounded-sm">
+                                                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                                                            <div className="text-[8px] sm:text-[9px] font-bold text-slate-400 font-mono uppercase bg-slate-50 px-1 sm:px-1.5 py-0.5 border rounded-sm">
                                                                 {mat.type}
                                                             </div>
                                                             <button
                                                                 onClick={() => handleDeleteMaterial(mat.id, mat.title)}
                                                                 className="p-1 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-md transition cursor-pointer"
-                                                                title="Hapus Materi"
                                                             >
                                                                 <Trash2 size={12} />
                                                             </button>
@@ -704,29 +703,29 @@ export default function ManageCourse() {
 
                 </main>
             ) : (
-                /* RENDER TAB 2: MANAJEMEN REKAPITULASI NILAI PENGEMUDI */
+                /* RENDER TAB 2: REKAPITULASI NILAI PENGEMUDI */
                 <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8">
-                    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5 md:p-6 space-y-6">
+                    <div className="bg-white border border-slate-200 rounded-2xl shadow-xs p-4 sm:p-5 md:p-6 space-y-6">
                         
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                             <div>
-                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Rekapitulasi Hasil Evaluasi Pengemudi B3</h2>
-                                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Pilih modul kuis dan tentukan tanggal input untuk rekap presisi.</p>
+                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-tight">Rekapitulasi Hasil Evaluasi</h2>
+                                <p className="text-[11px] text-slate-400 font-medium mt-0.5">Pilih modul kuis dan tentukan tanggal rekap.</p>
                             </div>
 
-                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-                                <Calendar size={13} className="text-slate-400" />
-                                <label className="text-[10px] font-bold text-slate-500 font-mono uppercase">Filter Hari:</label>
+                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl self-start sm:self-auto max-w-full overflow-hidden">
+                                <Calendar size={13} className="text-slate-400 flex-shrink-0" />
+                                <label className="text-[10px] font-bold text-slate-500 font-mono uppercase whitespace-nowrap">Filter:</label>
                                 <input 
                                     type="date" 
                                     value={filterDate}
                                     onChange={(e) => setFilterDate(e.target.value)}
-                                    className="border-none bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                                    className="border-none bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer min-w-[100px]"
                                 />
                                 {filterDate && (
                                     <button 
                                         onClick={() => setFilterDate("")} 
-                                        className="text-[10px] text-rose-600 hover:underline font-extrabold ml-1"
+                                        className="text-[10px] text-rose-600 hover:underline font-extrabold ml-1 flex-shrink-0"
                                     >
                                         Clear
                                     </button>
@@ -740,32 +739,31 @@ export default function ManageCourse() {
                                 {topicGroups.flatMap(group => group.materials || [])
                                     .filter(mat => mat.type === 'Kuis')
                                     .length === 0 ? (
-                                        <p className="text-xs text-slate-400 italic">Belum ada modul dengan format 'Kuis' yang terbit di silabus kelas ini.</p>
+                                        <p className="text-xs text-slate-400 italic">Belum ada modul kuis yang diterbitkan.</p>
                                     ) : (
                                         topicGroups.flatMap(group => group.materials || [])
                                             .filter(mat => mat.type === 'Kuis')
                                             .map((quiz: any) => {
                                                 const participantCount = grades.filter(g => Number(g.sub_module_id) === Number(quiz.id)).length;
+                                                const isSelected = selectedQuizId === String(quiz.id);
                                                 
                                                 return (
                                                     <button
                                                         key={quiz.id}
                                                         type="button"
-                                                        onClick={() => {
-                                                            setSelectedQuizId(selectedQuizId === String(quiz.id) ? '' : String(quiz.id));
-                                                        }}
-                                                        className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer shadow-2xs ${
-                                                            selectedQuizId === String(quiz.id)
+                                                        onClick={() => setSelectedQuizId(isSelected ? '' : String(quiz.id))}
+                                                        className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer shadow-2xs text-left max-w-full ${
+                                                            isSelected
                                                                 ? 'bg-indigo-600 border-indigo-600 text-white'
                                                                 : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                                                         }`}
                                                     >
-                                                        <HelpCircle size={14} />
-                                                        <span>{quiz.title}</span>
-                                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-mono ${
-                                                            selectedQuizId === String(quiz.id) ? 'bg-indigo-700 text-white' : 'bg-slate-200 text-slate-600'
+                                                        <HelpCircle size={14} className="flex-shrink-0" />
+                                                        <span className="truncate max-w-[150px] sm:max-w-xs">{quiz.title}</span>
+                                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-mono flex-shrink-0 ${
+                                                            isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-200 text-slate-600'
                                                         }`}>
-                                                            {participantCount} Pengisi
+                                                            {participantCount} P
                                                         </span>
                                                     </button>
                                                 );
@@ -782,42 +780,43 @@ export default function ManageCourse() {
 
                             return (
                                 <div className="border-t border-slate-100 pt-4">
-                                    <div className="mb-3 flex justify-between items-center bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50">
-                                        <span className="text-xs font-bold text-indigo-950 uppercase tracking-tight">
-                                            Menampilkan Nilai: <span className="text-indigo-600 font-extrabold">{activeQuiz?.title}</span>
+                                    <div className="mb-4 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100/50">
+                                        <span className="text-[11px] sm:text-xs font-bold text-indigo-950 uppercase tracking-tight block truncate">
+                                            Kuis: <span className="text-indigo-600 font-extrabold">{activeQuiz?.title}</span>
                                         </span>
                                     </div>
 
                                     {filteredGrades.length === 0 ? (
                                         <div className="text-center py-10 text-slate-400 text-xs font-medium border border-dashed border-slate-200 rounded-xl bg-slate-50/20">
-                                            Tidak ada data pengemudi yang menyelesaikan kuis ini {filterDate ? "pada tanggal terpilih" : ""}.
+                                            Tidak ada data pengemudi yang menyelesaikan kuis ini.
                                         </div>
                                     ) : (
-                                        <div className="overflow-x-auto border border-slate-100 rounded-xl">
-                                            <table className="w-full text-left border-collapse text-xs">
+                                        /* 📱 TABLE RESPONSIF MOBILE (Scroll Horizontal Aman Tanpa Potong Layout) */
+                                        <div className="overflow-x-auto border border-slate-100 rounded-xl no-scrollbar">
+                                            <table className="w-full text-left border-collapse text-xs min-w-[600px]">
                                                 <thead>
                                                     <tr className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
                                                         <th className="p-3">Nama Pengemudi</th>
-                                                        <th className="p-3">NIK (Nomor Induk Kependudukan)</th>
-                                                        <th className="p-3 text-center">Nilai Final Kuis</th>
-                                                        <th className="p-3 text-center">Status Kompetensi</th>
-                                                        <th className="p-3">Waktu Input Jawaban</th>
+                                                        <th className="p-3">NIK</th>
+                                                        <th className="p-3 text-center">Nilai</th>
+                                                        <th className="p-3 text-center">Status</th>
+                                                        <th className="p-3">Waktu Input</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700 bg-white">
                                                     {filteredGrades.map((row: any) => (
                                                         <tr key={row.id} className="hover:bg-slate-50/50 transition">
-                                                            <td className="p-3 font-bold text-slate-900 capitalize">{row.name}</td>
-                                                            <td className="p-3 font-mono text-slate-500 tracking-wider">{row.nik || '-'}</td>
-                                                            <td className="p-3 text-center font-mono font-bold text-indigo-600 bg-indigo-50/30">{row.score} / 100</td>
-                                                            <td className="p-3 text-center">
+                                                            <td className="p-3 font-bold text-slate-900 capitalize whitespace-nowrap">{row.name}</td>
+                                                            <td className="p-3 font-mono text-slate-500 tracking-wider whitespace-nowrap">{row.nik || '-'}</td>
+                                                            <td className="p-3 text-center font-mono font-bold text-indigo-600 bg-indigo-50/30 whitespace-nowrap">{row.score} / 100</td>
+                                                            <td className="p-3 text-center whitespace-nowrap">
                                                                 <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md font-mono ${
                                                                     row.status === 'LULUS' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
                                                                 }`}>
                                                                     {row.status}
                                                                 </span>
                                                             </td>
-                                                            <td className="p-3 font-mono text-slate-650">{row.formatted_date || '-'}</td>
+                                                            <td className="p-3 font-mono text-slate-500 whitespace-nowrap">{row.formatted_date || '-'}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -828,7 +827,7 @@ export default function ManageCourse() {
                             );
                         })() : (
                             <div className="text-center py-10 text-slate-400 text-xs font-medium border border-dashed border-slate-100 rounded-xl bg-slate-50/30">
-                                 Silakan klik salah satu tombol modul kuis di atas untuk memuat daftar nama peserta beserta perolehan nilainya.
+                                Silakan klik salah satu tombol modul kuis di atas untuk memuat daftar nama peserta.
                             </div>
                         )}
                     </div>
