@@ -1,23 +1,55 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
+import axios from "axios"; 
 import { Eye, EyeOff, BookOpen, ArrowRight, GraduationCap, Users, BarChart2 } from "lucide-react";
 
 export default function App() {
+    const navigate = useNavigate(); 
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
+    
+    // PERBAIKAN: Ganti state email menjadi nik
+    const [nik, setNik] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email || !password) {
-            setError("Harap isi email dan kata sandi.");
+        
+        // PERBAIKAN: Validasi input nik
+        if (!nik || !password) {
+            setError("Harap isi NIK dan kata sandi.");
             return;
         }
+        
         setError("");
         setIsLoading(true);
-        setTimeout(() => setIsLoading(false), 1800);
+
+        try {
+            // 1. Tembak API Login ke Backend Laravel menggunakan payload nik
+            const response = await axios.post('http://127.0.0.1:8000/api/login', {
+                nik: nik,
+                password: password
+            });
+
+            // 2. Simpan token rahasia & data user ke localStorage browser
+            localStorage.setItem('token', response.data.access_token);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+
+            // 3. Alihkan (redirect) pelajar ke halaman dashboard kursus utama
+            navigate('/dashboard');
+            
+        } catch (err: any) {
+            // Ambil pesan error validasi langsung dari Laravel
+            if (err.response && err.response.data) {
+                setError(err.response.data.message);
+            } else {
+                setError("Gagal terhubung ke server Backend.");
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const stats = [
@@ -28,12 +60,9 @@ export default function App() {
     ];
 
     return (
-        <div
-            className="min-h-screen w-full flex font-sans antialiased"
-        >
+        <div className="min-h-screen w-full flex font-sans antialiased">
             {/* Left panel — brand + stats */}
             <div className="hidden lg:flex lg:w-[52%] xl:w-[55%] flex-col justify-between p-12 xl:p-16 bg-[#1d2b6b] relative overflow-hidden">
-                {/* Subtle grid overlay */}
                 <div
                     className="absolute inset-0 opacity-[0.04]"
                     style={{
@@ -43,11 +72,9 @@ export default function App() {
                     }}
                 />
 
-                {/* Accent blob */}
                 <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#3d52a0] opacity-30 blur-3xl" />
                 <div className="absolute bottom-0 left-1/4 w-72 h-72 rounded-full bg-[#0f1d50] opacity-50 blur-3xl" />
 
-                {/* Logo */}
                 <div className="relative z-10 flex items-center gap-3">
                     <div className="w-9 h-9 bg-white rounded-sm flex items-center justify-center">
                         <BookOpen size={18} className="text-[#1d2b6b]" strokeWidth={2.5} />
@@ -57,11 +84,8 @@ export default function App() {
                     </span>
                 </div>
 
-                {/* Hero copy */}
                 <div className="relative z-10">
-                    <p
-                        className="text-[#7b92e8] text-xs font-medium tracking-[0.18em] uppercase mb-4 font-mono"
-                    >
+                    <p className="text-[#7b92e8] text-xs font-medium tracking-[0.18em] uppercase mb-4 font-mono">
                         Platform Belajar Terpadu
                     </p>
                     <h1 className="text-white text-4xl xl:text-5xl font-bold leading-[1.15] tracking-tight mb-6">
@@ -77,7 +101,6 @@ export default function App() {
                     </p>
                 </div>
 
-                {/* Stats grid */}
                 <div className="relative z-10 grid grid-cols-2 gap-px bg-white/10 rounded-lg overflow-hidden border border-white/10">
                     {stats.map(({ icon: Icon, value, label }) => (
                         <div
@@ -88,9 +111,7 @@ export default function App() {
                             <div className="text-white font-bold text-xl tracking-tight">
                                 {value}
                             </div>
-                            <div
-                                className="text-[#7b92e8] text-xs mt-0.5 font-mono"
-                            >
+                            <div className="text-[#7b92e8] text-xs mt-0.5 font-mono">
                                 {label}
                             </div>
                         </div>
@@ -116,29 +137,28 @@ export default function App() {
                         <h2 className="text-[#0f1117] text-2xl font-bold tracking-tight mb-1">
                             Selamat datang kembali
                         </h2>
-                        <p className="text-[#6b7280] text-sm">
-                            Masuk ke akun belajarmu untuk melanjutkan.
-                        </p>
+                        <h3 className="text-[#6b7280] text-sm">
+                            Masuk menggunakan Nomor Induk Kependudukan (NIK) Anda.
+                        </h3>
                     </div>
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-                        {/* Email */}
+                        {/* NIK */}
                         <div className="space-y-1.5">
                             <label
-                                htmlFor="email"
+                                htmlFor="nik"
                                 className="block text-[#0f1117] text-xs font-medium tracking-wide uppercase font-mono"
                                 style={{ letterSpacing: "0.06em" }}
                             >
-                                Email
+                                Nomor Induk Kependudukan (NIK)
                             </label>
                             <input
-                                id="email"
-                                type="email"
-                                autoComplete="email"
-                                placeholder="nama@institusi.ac.id"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                id="nik"
+                                type="text"
+                                placeholder="Masukkan 16 digit NIK"
+                                value={nik}
+                                onChange={(e) => setNik(e.target.value)}
                                 className="w-full h-11 px-3.5 bg-white border border-[rgba(15,17,23,0.12)] rounded text-[#0f1117] text-sm placeholder:text-[#b0b7ce] focus:outline-none focus:border-[#3d52a0] focus:ring-2 focus:ring-[#3d52a0]/15 transition-all duration-150"
                             />
                         </div>
@@ -212,7 +232,7 @@ export default function App() {
 
                         {/* Error */}
                         {error && (
-                            <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+                            <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded text-red-600 text-xs font-medium">
                                 {error}
                             </div>
                         )}
@@ -261,52 +281,15 @@ export default function App() {
                     {/* Divider */}
                     <div className="flex items-center gap-3 my-6">
                         <div className="flex-1 h-px bg-[rgba(15,17,23,0.08)]" />
-                        <span
-                            className="text-[#b0b7ce] text-xs font-mono"
-                        >
+                        <span className="text-[#b0b7ce] text-xs font-mono">
                             atau
                         </span>
                         <div className="flex-1 h-px bg-[rgba(15,17,23,0.08)]" />
                     </div>
 
-                    {/* SSO */}
-                    {/* <button
-                        type="button"
-                        className="w-full h-11 bg-white border border-[rgba(15,17,23,0.12)] hover:border-[#3d52a0] hover:bg-[#f0f2fa] rounded flex items-center justify-center gap-2.5 text-sm font-medium text-[#0f1117] transition-all duration-150"
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path
-                                d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"
-                                fill="#eef0f8"
-                                stroke="#3d52a0"
-                                strokeWidth="1.5"
-                            />
-                            <path
-                                d="M8 12h8M12 8v8"
-                                stroke="#3d52a0"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                            />
-                        </svg>
-                        Masuk dengan SSO Institusi
-                    </button> */}
-
-                    {/* Register */}
-                    {/* <p className="text-center text-sm text-[#6b7280] mt-8">
-                        Belum punya akun?{" "}
-                        <a
-                            href="#"
-                            className="text-[#3d52a0] hover:text-[#1d2b6b] font-medium transition-colors duration-150"
-                        >
-                            Daftar sekarang
-                        </a>
-                    </p> */}
-
                     {/* Footer */}
-                    <p
-                        className="text-center text-[#b0b7ce] text-xs mt-10 font-mono"
-                    >
-                        © 2025 Learning Management System · Kebijakan Privasi · Syarat & Ketentuan
+                    <p className="text-center text-[#b0b7ce] text-xs mt-10 font-mono">
+                        © 2026 Learning Management System · Kebijakan Privasi · Syarat & Ketentuan
                     </p>
                 </div>
             </div>

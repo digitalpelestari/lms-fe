@@ -1,82 +1,224 @@
-import React from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BookOpen, ChevronDown, ChevronRight, FileText, PlayCircle, CheckCircle, ArrowLeft } from "lucide-react";
 
-interface LearningModule {
+// 1. Definisikan Interface Struktur Data Baru (Termasuk Sub-Materi)
+interface SubMaterial {
+    id: number;
+    title: string;
+    type: "video" | "document" | "quiz";
+    duration_or_pages?: string;
+}
+
+interface Module {
+    id: number;
+    title: string;
+    description?: string;
+    sub_materials?: SubMaterial[]; // Array sub-materi di dalam modul
+}
+
+interface TopicGroup {
+    id: number;
+    title: string;
+    modules: Module[];
+}
+
+interface Course {
     id: number;
     title: string;
     description: string;
-    category: 'MATERI POKOK' | 'MATERI KHUSUS';
-    status: 'Belum Rilis' | 'Tersedia';
-    isLocked: boolean;
-    icon: string;
-    iconBgColor: string;
+    topic_groups: TopicGroup[];
 }
 
 export default function CourseWorkspace() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    
+    const [course, setCourse] = useState<Course | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    // State untuk mencatat Kelompok Materi (Topic) mana yang sedang terbuka
+    const [expandedTopics, setExpandedTopics] = useState<Record<number, boolean>>({ 0: true }); // Buka topik pertama by default
+    
+    // State untuk mencatat Modul mana saja yang sedang terbuka sub-materinya
+    const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({});
 
-    const modules: LearningModule[] = [
-        { id: 1, title: "Modul Pembelajaran – ABB", description: "Akses materi lengkap modul ABB untuk menunjang kompetensi standar perusahaan.", category: "MATERI POKOK", status: "Tersedia", isLocked: false, icon: "📖", iconBgColor: "bg-blue-50 text-blue-600" },
-        { id: 2, title: "Modul Pembelajaran – AKABB", description: "Pendalaman materi lanjutan AKABB secara terstruktur dan teruji.", category: "MATERI POKOK", status: "Belum Rilis", isLocked: true, icon: "📊", iconBgColor: "bg-indigo-50 text-indigo-600" },
-        { id: 3, title: "Modul – Defensive Driving (DDT)", description: "Panduan wajib keselamatan berkendara aman serta mitigasi risiko utama lapangan.", category: "MATERI KHUSUS", status: "Belum Rilis", isLocked: true, icon: "🚚", iconBgColor: "bg-orange-50 text-orange-600" }
-    ];
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        
+        axios.get(`http://127.0.0.1:8000/api/courses/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(response => {
+            setCourse(response.data);
+            setIsLoading(false);
+        })
+        .catch(error => {
+            console.error("Gagal memuat silabus kelas:", error);
+            setIsLoading(false);
+        });
+    }, [id]);
+
+    const toggleTopic = (topicId: number) => {
+        setExpandedTopics(prev => ({ ...prev, [topicId]: !prev[topicId] }));
+    };
+
+    const toggleModule = (moduleId: number) => {
+        setExpandedModules(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
+    };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <p className="text-sm text-gray-500 font-mono animate-pulse">Memuat workspace kelas...</p>
+            </div>
+        );
+    }
+
+    if (!course) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+                <p className="text-sm font-semibold text-red-600">Kelas tidak ditemukan atau sesi Anda berakhir.</p>
+                <button onClick={() => navigate("/dashboard")} className="mt-4 text-xs text-[#3d52a0] underline">Kembali ke Dashboard</button>
+            </div>
+        );
+    }
 
     return (
-        <div className="bg-slate-50 min-h-screen font-sans text-slate-800 antialiased p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
-                <header className="flex items-center gap-4 mb-6">
-                    <Link to="/" className="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-xl shadow-xs">☰</Link>
-                    <h1 className="text-sm font-semibold text-slate-600">Workspace / Ruang Belajar</h1>
-                </header>
-
-                {/* USER GREETING BANNER */}
-                <section className="rounded-3xl bg-[#261638] text-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md mb-8">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-amber-400/10 border border-amber-400/20 rounded-2xl flex items-center justify-center text-2xl">🎉</div>
-                        <div>
-                            <h2 className="text-xl md:text-2xl font-bold">Hai, <span className="text-amber-400">Edi Supaka!</span></h2>
-                            <p className="text-xs text-slate-400 mt-1 max-w-xl">Jangan lupa lakukan peregangan fisik ringan 5 menit jika sudah terlalu lama membaca materi. Tetap bugar! ☕</p>
-                        </div>
+        <div className="min-h-screen bg-[#f7f7f8] flex flex-col font-sans antialiased">
+            {/* Header / Top Bar */}
+            <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20">
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => navigate("/dashboard")} 
+                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 transition-colors"
+                    >
+                        <ArrowLeft size={16} />
+                    </button>
+                    <div>
+                        <h1 className="text-sm font-bold text-gray-900">{course.title}</h1>
+                        <p className="text-[11px] text-gray-400 font-mono">Ruang Silabus & Materi Kelas</p>
                     </div>
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-3 px-6 text-center min-w-[160px]">
-                        <span className="text-[10px] font-bold text-slate-400 tracking-wider block uppercase">Progres Berkas</span>
-                        <span className="text-lg font-black text-white mt-0.5 block">0 Berkas Siap</span>
-                    </div>
-                </section>
+                </div>
+            </header>
 
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-2"><span className="text-blue-600 text-lg">💎</span><h3 className="text-base font-extrabold text-slate-900">Modul Pembelajaran Utama</h3></div>
-                    <span className="text-xs font-semibold text-slate-400">Geser kanan ➔</span>
+            {/* Layout Utama Content */}
+            <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">Kurikulum Pembelajaran</h2>
+                    <p className="text-xs text-gray-500">{course.description}</p>
                 </div>
 
-                {/* MODUL GRID CARDS */}
-                <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {modules.map((mod) => (
-                        <div key={mod.id} className="bg-white border border-slate-100 rounded-3xl p-6 shadow-xs flex flex-col justify-between min-h-[300px]">
-                            <div className="flex items-center justify-between mb-5">
-                                <div className={`w-12 h-12 rounded-2xl ${mod.iconBgColor} flex items-center justify-center text-xl shadow-xs`}>{mod.icon}</div>
-                                <span className={`px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider ${mod.category === 'MATERI POKOK' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>{mod.category}</span>
-                            </div>
-                            <div className="flex-1 mb-6">
-                                <h4 className="font-extrabold text-sm text-slate-900 tracking-tight mb-2 leading-snug">{mod.title}</h4>
-                                <p className="text-xs text-slate-400 font-medium leading-relaxed line-clamp-3">{mod.description}</p>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                                    <span>{mod.isLocked ? '🔒' : '🔓'}</span>
-                                    <span className={mod.isLocked ? 'text-slate-400' : 'text-emerald-600'}>Materi {mod.status}</span>
-                                </div>
-                                {mod.isLocked ? (
-                                    <button disabled className="w-full bg-slate-50 border border-slate-200 text-slate-400 font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-not-allowed">🔒 Akses Terkunci</button>
-                                ) : (
-                                    <button onClick={() => navigate(`/course/${id}/modul/${mod.id}`)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition duration-150 shadow-sm shadow-blue-200">📖 Buka Slide Materi</button>
+                {/* List Kelompok Materi (Topic Groups) */}
+                <div className="space-y-4">
+                    {course.topic_groups?.map((topic, topicIdx) => {
+                        const isTopicOpen = expandedTopics[topic.id] ?? false;
+
+                        return (
+                            <div key={topic.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                {/* Bar Judul Topik */}
+                                <button
+                                    onClick={() => toggleTopic(topic.id)}
+                                    className="w-full px-5 py-4 bg-gray-50/70 hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 transition-colors text-left"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded bg-[#3d52a0]/10 flex items-center justify-center text-xs font-mono font-bold text-[#3d52a0]">
+                                            {topicIdx + 1}
+                                        </div>
+                                        <span className="font-semibold text-gray-900 text-sm">{topic.title}</span>
+                                    </div>
+                                    <span className="text-gray-400">
+                                        {isTopicOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                    </span>
+                                </button>
+
+                                {/* Isi Konten di Dalam Topik (Daftar Modul) */}
+                                {isTopicOpen && (
+                                    <div className="divide-y divide-gray-100 bg-white">
+                                        {topic.modules?.map((module) => {
+                                            const isModuleOpen = expandedModules[module.id] ?? false;
+                                            const hasSubMaterials = module.sub_materials && module.sub_materials.length > 0;
+
+                                            return (
+                                                <div key={module.id} className="p-4 transition-colors">
+                                                    {/* Bar Klik Modul */}
+                                                    <div 
+                                                        onClick={() => hasSubMaterials ? toggleModule(module.id) : navigate(`/course/${id}/modul/${module.id}`)}
+                                                        className={`flex items-start justify-between p-2 rounded-md transition-all cursor-pointer ${hasSubMaterials ? "hover:bg-gray-50" : "hover:bg-[#3d52a0]/5 group"}`}
+                                                    >
+                                                        <div className="flex gap-3 flex-1">
+                                                            <BookOpen size={16} className="text-gray-400 mt-0.5 group-hover:text-[#3d52a0]" />
+                                                            <div>
+                                                                <h4 className="text-xs font-bold text-gray-900 group-hover:text-[#3d52a0]">
+                                                                    {module.title}
+                                                                </h4>
+                                                                {module.description && (
+                                                                    <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">
+                                                                        {module.description}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Indikator Aksi */}
+                                                        <div className="text-gray-400 text-[11px] font-mono self-center pl-2">
+                                                            {hasSubMaterials ? (
+                                                                <div className="flex items-center gap-1.5 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-sm">
+                                                                    <span>{module.sub_materials?.length} Sub-materi</span>
+                                                                    {isModuleOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-[#3d52a0] opacity-0 group-hover:opacity-100 transition-opacity font-sans font-medium">Buka Modul →</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* ======================================================== */}
+                                                    {/* RENDER SUB-MATERI JIKA MODUL DIPENCET & PUNYA SUB-MATERI */}
+                                                    {/* ======================================================== */}
+                                                    {isModuleOpen && hasSubMaterials && (
+                                                        <div className="mt-2 ml-7 pl-4 border-l-2 border-dashed border-gray-200 space-y-2 py-1 animate-fadeIn">
+                                                            {module.sub_materials?.map((sub) => {
+                                                                // Pilih icon berdasarkan tipe materi
+                                                                const SubIcon = sub.type === "video" ? PlayCircle : sub.type === "quiz" ? CheckCircle : FileText;
+
+                                                                return (
+                                                                    <div
+                                                                        key={sub.id}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation(); // Mencegah modul ikut ketutup saat sub materi diklik
+                                                                            // Arahkan ke Halaman Viewer Modul (bawa parameter modul & sub-materi)
+                                                                            navigate(`/course/${id}/modul/${module.id}?sub=${sub.id}`);
+                                                                        }}
+                                                                        className="flex items-center justify-between p-2 bg-gray-50/50 hover:bg-[#3d52a0]/5 border border-transparent hover:border-[#3d52a0]/20 rounded cursor-pointer group transition-all"
+                                                                    >
+                                                                        <div className="flex items-center gap-2.5">
+                                                                            <SubIcon size={14} className="text-gray-400 group-hover:text-[#3d52a0]" />
+                                                                            <span className="text-[11px] font-medium text-gray-700 group-hover:text-gray-900">
+                                                                                {sub.title}
+                                                                            </span>
+                                                                        </div>
+                                                                        {sub.duration_or_pages && (
+                                                                            <span className="text-[10px] text-gray-400 font-mono bg-white border px-1.5 py-0.5 rounded">
+                                                                                {sub.duration_or_pages}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 )}
                             </div>
-                        </div>
-                    ))}
-                </main>
-            </div>
+                        );
+                    })}
+                </div>
+            </main>
         </div>
     );
 }
