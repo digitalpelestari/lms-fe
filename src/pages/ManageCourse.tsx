@@ -279,7 +279,7 @@ export default function ManageCourse() {
         }
 
         try {
-            await axios.post(`api.pelestari.id/api/courses/${id}/materials`, formData, {
+            await axios.post(`https://api.pelestari.id/api/courses/${id}/materials`, formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
