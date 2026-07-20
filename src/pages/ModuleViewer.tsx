@@ -379,7 +379,7 @@ export default function ModuleViewer() {
                                 {activeSubModule.type === 'PPT' && (
                                     <iframe 
                                         key={activeSubModule.id}
-                                        src={`httpss://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(activeSubModule.file_url || '')}`} 
+                                        src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(activeSubModule.file_url || '')}`} 
                                         className="w-full h-full min-h-[320px] sm:min-h-[450px] border-none flex-1 bg-white"
                                         title={activeSubModule.title}
                                         frameBorder="0"
