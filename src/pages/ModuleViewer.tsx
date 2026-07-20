@@ -95,7 +95,7 @@ export default function ModuleViewer() {
                 subModules: (group.sub_modules || group.subModules || []).map((sub: any) => {
                     const finalUrl = sub.type === 'PPT'
                         ? sub.file_url
-                        : (sub.type !== 'Kuis' ? `https://127.0.0.1:8000/api/materials/stream/${sub.id}` : sub.file_url);
+                        : (sub.type !== 'Kuis' ? `https://api.pelestari.id/api/materials/stream/${sub.id}` : sub.file_url);
 
                     return {
                         ...sub,
@@ -134,7 +134,7 @@ export default function ModuleViewer() {
         const token = localStorage.getItem("token");
         setIsSavingProgress(true);
         try {
-            await axios.post(`api.pelestari.id/api/courses/sub-module/${subModuleId}/complete`, {}, {
+            await axios.post(`https://api.pelestari.id/api/courses/sub-module/${subModuleId}/complete`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchCourseData();
