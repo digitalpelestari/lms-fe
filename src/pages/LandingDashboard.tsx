@@ -69,9 +69,14 @@ export default function LandingDashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     {/* Logo & Branding */}
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md shadow-indigo-200 flex-shrink-0">
-                            L
-                        </div>
+                        <img 
+    src="/favicon.png" 
+    alt="Logo Pelestari" 
+    className="w-8 h-8 md:w-9 md:h-9 rounded-full object-cover shadow-md shadow-indigo-100 md:shadow-indigo-200 flex-shrink-0"
+    onError={(e) => {
+        (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=Pelestari&background=4f46e5&color=fff';
+    }}
+/>
                         <div className="min-w-0">
                             <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 block leading-none truncate">
                                 Learning Management System
@@ -138,49 +143,63 @@ export default function LandingDashboard() {
 
             {/* 2. HERO BANNER SECTION (RESPONSIF & OPTIMASI GRID DI HP) */}
             <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6">
-                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white min-h-[280px] sm:min-h-[360px] flex items-center p-6 sm:p-8 md:p-12 shadow-xl">
-                    
-                    {/* Background Pattern Hiasan Tipis */}
-                    <div className="absolute inset-0 bg-white/5 opacity-10 pointer-events-none"></div>
+    {/* 🚀 UPDATE: Latar belakang diganti gradasi Biru (from-blue-950 via-blue-800 to-sky-900) */}
+    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-blue-950 via-blue-800 to-sky-900 text-white min-h-[280px] sm:min-h-[360px] flex items-center p-6 sm:p-8 md:p-12 shadow-xl">
+        
+        {/* Background Pattern Hiasan Tipis */}
+        <div className="absolute inset-0 bg-white/5 opacity-10 pointer-events-none"></div>
 
-                    <div className="max-w-xl z-10 relative w-full">
-                        <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
-                            <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded text-[10px] sm:text-xs font-semibold">Pelatihan</span>
-                            <span className="bg-amber-500/30 text-amber-300 border border-amber-500/20 px-2.5 py-1 rounded text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Standar K3</span>
-                        </div>
-                        <h1 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-indigo-200">Learning Management System (LMS)</h1>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight mt-1 mb-3 sm:mb-4 leading-tight break-words">
-                            PT Peduli Lestari Indonesia
-                        </h2>
-                        <p className="text-indigo-100 text-xs sm:text-sm font-medium leading-relaxed border-t border-indigo-700/50 pt-3 uppercase tracking-wide">
-                            Belajar, Compliant, Aman di Jalan, dan Siap Sertifikasi Profesional
-                        </p>
-                    </div>
+        <div className="max-w-xl z-10 relative w-full">
+            <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
+                <span className="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded text-[10px] sm:text-xs font-semibold">Pelatihan</span>
+                <span className="bg-amber-500/30 text-amber-300 border border-amber-500/20 px-2.5 py-1 rounded text-[10px] sm:text-xs font-semibold uppercase tracking-wider">ABB</span>
+                <span className="bg-amber-500/30 text-amber-300 border border-amber-500/20 px-2.5 py-1 rounded text-[10px] sm:text-xs font-semibold uppercase tracking-wider">AKBB</span>
+            </div>
+            {/* 🚀 UPDATE: Mengubah aksen teks kecil menjadi teks warna biru muda (text-blue-200) */}
+            <h1 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-blue-200">Learning Management System (LMS)</h1>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight mt-1 mb-3 sm:mb-4 leading-tight break-words">
+                PT Peduli Lestari Indonesia
+            </h2>
+            {/* 🚀 UPDATE: Mengubah border pemisah teks menjadi biru (border-blue-700/50) */}
+            <p className="text-blue-100 text-xs sm:text-sm font-medium leading-relaxed border-t border-blue-700/50 pt-3 uppercase tracking-wide">
+                Your Business Solution Partner 
+            </p>
+        </div>
 
-                    {/* Aksen Hiasan Kanan (Otomatis Sembunyi Rapi di Bawah Layar Large `lg:`) */}
-                    <div className="hidden lg:block absolute right-12 bottom-0 top-12 w-80 bg-white p-3 pb-8 rounded-t-xl shadow-2xl rotate-2 translate-y-4">
-                        <div className="w-full h-56 bg-gradient-to-tr from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center text-indigo-900 font-black text-center p-4">
-                            Simulasi & Tata Cara Pengemudi Angkutan B3
-                        </div>
-                        <div className="mt-4 flex items-center justify-between px-2">
-                            <div className="flex gap-2 text-rose-500">❤️ 💬 ✈️</div>
-                            <div className="flex gap-1">
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
-                                <span className="w-1.5 h-1.5 bg-slate-300 rounded-full"></span>
-                            </div>
-                        </div>
-                    </div>
+        {/* Aksen Hiasan Kanan (Otomatis Sembunyi Rapi di Bawah Layar Large `lg:`) */}
+        <div className="hidden lg:block absolute right-12 bottom-0 top-12 w-80 bg-white p-3 pb-8 rounded-t-xl shadow-2xl rotate-2 translate-y-4">
+            {/* 🚀 UPDATE: Mengubah gradasi di dalam box kartu hiasan menjadi biru (from-blue-100 to-sky-100 dan text-blue-900) */}
+            <img 
+    src="src/assets/8.jpg" 
+    alt="Simulasi Angkutan B3" 
+    className="w-full h-56 object-cover rounded-lg shadow-inner border border-slate-100"
+    onError={(e) => {
+        // Fallback jika gambar utama gagal dimuat, akan memunculkan gambar placeholder yang rapi
+        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=600&q=80';
+    }}
+/>
+            <div className="mt-4 flex items-center justify-between px-2">
+                <div className="flex gap-2 text-rose-500">❤️ 💬 ✈️</div>
+                <div className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-slate-300 rounded-full"></span>
                 </div>
-            </header>
+            </div>
+        </div>
+    </div>
+</header>
 
             {/* 3. STATISTIK AKUN & SELAMAT DATANG */}
             <section className="bg-white border-y border-slate-100 py-6 sm:py-10 my-4 shadow-inner">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
                     <div>
-                        <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Selamat Datang di LMS Lemdiklat B3</h3>
-                        <p className="text-xs text-slate-500 mt-1">
-                            Panduan Penggunaan LMS bagi calon pengemudi & armada logistik &gt; <a href="#" className="text-fuchsia-500 font-bold hover:underline">klik disini</a>
-                        </p>
+                        <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Selamat Datang di Learning Management System Pelestari</h3>
+                        <p className="text-xs text-slate-500 mt-2 font-medium">
+    Silakan masuk (login) terlebih dahulu untuk dapat mengakses seluruh materi pembelajaran. &gt;{' '}
+    <a href="/login" className="text-blue-600 font-bold hover:text-blue-700 hover:underline transition">
+        Klik di sini
+    </a>
+</p>
                     </div>
 
                     <div className="lg:col-span-2 flex flex-col sm:flex-row gap-4">
