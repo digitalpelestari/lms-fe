@@ -97,7 +97,7 @@ export default function BulkRegister() {
                 <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl shadow-xs p-5 space-y-4">
                     <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-[11px] font-medium leading-relaxed">
                         💡 <strong>Petunjuk Otomatisasi Akun:</strong> Cukup input Nama, NIK, dan Level Kelas pengemudi. 
-                        Sistem backend akan secara otomatis men-generate <strong>Password awal berupa 4 digit angka paling belakang dari NIK</strong> masing-masing peserta.
+                        Sistem akan secara otomatis men-generate <strong>Password awal berupa 4 digit angka paling belakang dari NIK</strong> masing-masing peserta.
                     </div>
 
                     {/* WRAPPER TABEL INPUT */}
