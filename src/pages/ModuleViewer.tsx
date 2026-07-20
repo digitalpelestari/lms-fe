@@ -358,14 +358,18 @@ export default function ModuleViewer() {
                             <div className="flex-1 w-full bg-slate-50 rounded-lg md:rounded-xl overflow-hidden border border-slate-200/60 flex flex-col justify-center items-center relative min-h-[300px] sm:min-h-[400px]">
                                 
                                 {activeSubModule.type === 'Video' && (
-                                    <video 
-                                        key={activeSubModule.id}
-                                        src={activeSubModule.file_url} 
-                                        controls 
-                                        className="w-full h-full object-contain max-h-[240px] sm:max-h-[450px]"
-                                        onEnded={() => markMaterialAsComplete(activeSubModule.id)}
-                                    />
-                                )}
+                                <video 
+                                    key={activeSubModule.id}
+                                    src={activeSubModule.file_url} 
+                                    controls 
+                                    playsInline                  
+                                    webkit-playsinline="true"    
+                                    preload="metadata"           
+                                    controlsList="nodownload"    
+                                    className="w-full h-full object-contain max-h-[240px] sm:max-h-[450px]"
+                                    onEnded={() => markMaterialAsComplete(activeSubModule.id)}
+                                />
+                            )}
 
                                 {activeSubModule.type === 'PDF' && (
                                     <iframe 
