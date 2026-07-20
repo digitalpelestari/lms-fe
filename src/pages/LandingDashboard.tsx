@@ -231,7 +231,17 @@ export default function LandingDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {courses.map((course) => (
                             <div key={course.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-md transition">
-                                <div className={`h-28 bg-gradient-to-br ${course.bg_color_class || 'from-indigo-600 to-purple-600'} p-3 flex flex-col justify-between text-white relative overflow-hidden`}>
+                 <div 
+    className="h-28 p-3 flex flex-col justify-between text-white relative overflow-hidden bg-gradient-to-br"
+    style={{
+        // Jika dari DB bernilai 'from-blue-500 to-cyan-500', kita mapping ke warna solid Hex yang pas
+        backgroundImage: course.bg_color_class?.includes('from-blue-500')
+            ? 'linear-gradient(to bottom right, #3b82f6, #06b6d4)' // Gradasi Blue-Cyan murni
+            : course.bg_color_class?.includes('from-purple-600')
+            ? 'linear-gradient(to bottom right, #9333ea, #4f46e5)' // Gradasi Purple-Indigo
+            : 'linear-gradient(to bottom right, #1e3a8a, #0c4a6e)' // Default Biru Gelap Pelestari
+    }}
+>
                                     <div className="absolute inset-0 bg-white/10 opacity-20 mix-blend-overlay pointer-events-none"></div>
                                     <span className="bg-white/20 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold tracking-wide w-fit uppercase">
                                         {course.period}
@@ -258,11 +268,11 @@ export default function LandingDashboard() {
                                         Lihat Detail Pelatihan
                                     </button>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </main>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </main>
         </div>
     );
 }

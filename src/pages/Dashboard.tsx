@@ -27,6 +27,13 @@ interface Course {
     instructor_name?: string;
 }
 
+// 🎨 DAFTAR 3 KOMBINASI GRADASI WARNA SOLID (HIJAU, BIRU, AMBER)
+const CARD_GRADIENTS = [
+    "from-emerald-500 to-teal-600",   // 🟢 Warna 1: Hijau Fresh (Untuk ID 1, 4, 7, dst)
+    "from-blue-500 to-indigo-600",    // 🔵 Warna 2: Biru Profesional (Untuk ID 2, 5, 8, dst)
+    "from-amber-500 to-orange-600"    // 🟡 Warna 3: Kuning/Amber Keren (Untuk ID 3, 6, 9, dst)
+];
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const [user, setUser] = useState<any>(null);
@@ -67,12 +74,10 @@ export default function Dashboard() {
         navigate("/login");
     };
 
-    // ==================== FUNGSI HAPUS KELAS PERMANEN ====================
     const handleDeleteCourse = async (courseId: number, courseTitle: string) => {
         if (window.confirm(`Apakah Anda yakin ingin menghapus kelas "${courseTitle}" beserta seluruh berkas & silabus di dalamnya secara permanen?`)) {
             const token = localStorage.getItem("token");
             try {
-                // 🛠️ FIX: Mengubah URL lokal menjadi URL Production agar bisa dihapus lewat HP
                 await axiosInstance.delete(`https://api.pelestari.id/api/courses/${courseId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -84,7 +89,6 @@ export default function Dashboard() {
             }
         }
     };
-    // =====================================================================
 
     const isInstructor = user?.role === "instruktur" || user?.role === "instructor";
     const isStudent = user?.role === "pelajar" || user?.role === "student";
@@ -98,6 +102,12 @@ export default function Dashboard() {
         return matchesSearch;
     });
 
+    // 💡 Helper fungsi untuk mengambil class gradasi warna berdasarkan Modulo ID
+    const getCourseGradient = (courseId: number) => {
+        const index = (Number(courseId) - 1) % 3;
+        return CARD_GRADIENTS[index] || CARD_GRADIENTS[0];
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -109,9 +119,8 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-slate-50/60 font-sans antialiased text-slate-800 flex flex-col">
             
-            {/* 1. PROFESSIONAL TOP NAVBAR (RESPONSIF) */}
+            {/* 1. TOP NAVBAR */}
             <nav className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 sm:py-3.5 flex justify-between items-center sticky top-0 z-40 shadow-xs">
-                {/* Bagian Kiri: Logo & Title */}
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 pr-2">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-indigo-200 flex-shrink-0">
                         <GraduationCap size={18} className="sm:w-5 sm:h-5" />
@@ -126,7 +135,6 @@ export default function Dashboard() {
                     </div>
                 </div>
                 
-                {/* Bagian Kanan: Aksi User */}
                 <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
                     <div className="hidden sm:flex items-center gap-2 bg-slate-100/80 border border-slate-200/40 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">
                         <UserIcon size={14} className="text-slate-400" />
@@ -167,7 +175,6 @@ export default function Dashboard() {
                         </p>
                     </div>
                     
-                    {/* SEKSI TOMBOL UTAMA UNTUK INSTRUKTUR (Melar Penuh di HP) */}
                     {isInstructor && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 lg:mt-0 w-full lg:w-auto">
                             <button
@@ -189,7 +196,7 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* 3. ANALYTICS QUICK STATS CARD (Hanya Pelajar) */}
+                {/* 3. ANALYTICS QUICK STATS CARD */}
                 {isStudent && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                         <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4 shadow-xs">
@@ -247,24 +254,42 @@ export default function Dashboard() {
                                     <div 
                                         key={course.id} 
                                         onClick={() => navigate(`/course/${course.id}`)}
-                                        className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-indigo-500 transition-all duration-200 cursor-pointer flex flex-col justify-between group"
+                                        className="bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-md hover:border-indigo-500 transition-all duration-300 cursor-pointer flex flex-col justify-between group overflow-hidden"
                                     >
                                         <div>
-                                            <div className={`text-[9px] font-bold tracking-widest font-mono px-2 py-0.5 rounded-md inline-block mb-2 uppercase ${
-                                                course.level === 'AKBB' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
-                                            }`}>
-                                                Tingkat: {course.level}
+                                            {/* 🚀 MURNI GRADASI SOLID (TAG IMG DIHAPUS TOTAL) */}
+                                            <div className={`h-24 sm:h-28 w-full relative flex items-end p-4 flex-shrink-0 bg-gradient-to-br ${getCourseGradient(course.id)} group-hover:brightness-105 transition-all duration-300`}>
+                                                
+                                                {/* Pola garis abstrak halus di background */}
+                                                <div className="absolute inset-0 bg-white/5 opacity-20 mix-blend-overlay pointer-events-none"></div>
+
+                                                {/* Inisial ID Kelas Besar Transparan di Pojok Kanan Atas */}
+                                                <div className="absolute right-2 top-0 text-5xl font-black text-white/15 select-none tracking-tighter font-mono">
+                                                    #{course.id}
+                                                </div>
+
+                                                {/* Badge Level mengambang */}
+                                                <div className="bg-white/25 backdrop-blur-md text-white text-[9px] font-extrabold tracking-wider font-mono px-2 py-0.5 rounded border border-white/10 uppercase shadow-xs">
+                                                    Tingkat: {course.level}
+                                                </div>
                                             </div>
-                                            <h3 className="font-bold text-slate-900 text-sm mb-1.5 uppercase tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-2">
-                                                {course.title}
-                                            </h3>
-                                            <p className="text-slate-400 text-[11px] font-medium leading-relaxed line-clamp-2 mb-4">
-                                                {course.description || "Silabus Pelatihan Kompetensi Utama Penanganan Material Zat Kimia Berbahaya Cairan Mudah Menyala B3."}
-                                            </p>
+
+                                            {/* 📄 CONTAINER TEKS BAWAH */}
+                                            <div className="p-4 sm:p-5 pb-0">
+                                                <h3 className="font-black text-slate-900 text-xs sm:text-sm mb-1.5 uppercase tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[36px] leading-snug">
+                                                    {course.title}
+                                                </h3>
+                                                <p className="text-slate-400 text-[11px] font-medium leading-relaxed line-clamp-2 mb-2">
+                                                    {course.description || "Silabus Pelatihan Kompetensi Utama Penanganan Material Zat Kimia Berbahaya B3."}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-medium">
-                                            <span className="truncate pr-2">Lecturer: {course.instructor_name || course.instructor || "Tim Teknis"}</span>
-                                            <span className="text-indigo-600 font-bold tracking-tight flex-shrink-0">Buka Kelas →</span>
+
+                                        <div className="p-4 sm:p-5 pt-0">
+                                            <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                                                <span className="truncate pr-2 capitalize">Instruktur: {course.instructor_name || course.instructor || "Tim Teknis"}</span>
+                                                <span className="text-indigo-600 font-bold tracking-tight flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-200">Buka Kelas →</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -292,51 +317,63 @@ export default function Dashboard() {
                                 {courses.map((course) => (
                                     <div 
                                         key={course.id} 
-                                        className="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between"
+                                        className="bg-white border border-slate-200/80 rounded-2xl shadow-xs flex flex-col justify-between group overflow-hidden"
                                     >
                                         <div>
-                                            <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                                                <div className="text-[9px] font-bold tracking-widest font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md uppercase">
-                                                    Instructor Module
+                                            {/* 🚀 MURNI GRADASI SOLID DI PANEL INSTRUKTUR */}
+                                            <div className={`h-24 sm:h-28 w-full relative flex items-start p-4 flex-shrink-0 bg-gradient-to-br ${getCourseGradient(course.id)} group-hover:brightness-105 transition-all duration-300`}>
+                                                <div className="absolute inset-0 bg-white/5 opacity-20 mix-blend-overlay pointer-events-none"></div>
+
+                                                <div className="absolute right-2 top-0 text-5xl font-black text-white/15 select-none tracking-tighter font-mono">
+                                                    #{course.id}
                                                 </div>
-                                                <div className={`text-[9px] font-bold tracking-widest font-mono px-2 py-0.5 rounded-md uppercase border ${
-                                                    course.level === 'AKBB' ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-blue-50 text-blue-700 border border-blue-100'
-                                                }`}>
-                                                    Target: {course.level}
+
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="text-[9px] font-bold tracking-widest font-mono text-white bg-white/15 border border-white/20 backdrop-blur-xs px-2 py-0.5 rounded-md uppercase">
+                                                        Module
+                                                    </div>
+                                                    <div className="text-[9px] font-bold tracking-widest font-mono text-white bg-white/25 border border-white/10 backdrop-blur-xs px-2 py-0.5 rounded-md uppercase">
+                                                        {course.level}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <h3 className="font-bold text-slate-900 text-sm mb-1.5 uppercase tracking-tight line-clamp-2">
-                                                {course.title}
-                                            </h3>
-                                            <p className="text-slate-400 text-[11px] font-medium leading-relaxed line-clamp-2 mb-4">
-                                                {course.description || "Manajemen materi silabus, penataan kuis evaluasi berkala, dan verifikasi absensi."}
-                                            </p>
+
+                                            {/* 📄 CONTAINER KONTEN TEKS BAWAH */}
+                                            <div className="p-4 sm:p-5 pb-0">
+                                                <h3 className="font-bold text-slate-900 text-sm mb-1.5 uppercase tracking-tight line-clamp-2 min-h-[40px]">
+                                                    {course.title}
+                                                </h3>
+                                                <p className="text-slate-400 text-[11px] font-medium leading-relaxed line-clamp-2 mb-4">
+                                                    {course.description || "Manajemen materi silabus, penataan kuis evaluasi berkala, dan verifikasi absensi."}
+                                                </p>
+                                            </div>
                                         </div>
                                         
-                                        <div className="pt-3 border-t border-slate-100">
-                                            {/* Optimasi grid tombol aksi di HP agar tidak terlalu sempit */}
-                                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-                                                <button 
-                                                    onClick={() => navigate(`/course/${course.id}`)}
-                                                    className="py-1.5 px-1 sm:px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
-                                                >
-                                                    <FileText size={12} className="hidden sm:block" />
-                                                    Silabus
-                                                </button>
-                                                <button 
-                                                    onClick={() => navigate(`/instructor/manage-course/${course.id}`)}
-                                                    className="py-1.5 px-1 sm:px-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition text-center cursor-pointer shadow-sm"
-                                                >
-                                                    Kelola
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDeleteCourse(course.id, course.title)}
-                                                    className="py-1.5 px-1 sm:px-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
-                                                    title="Hapus Kelas Permanen"
-                                                >
-                                                    <Trash2 size={12} className="hidden sm:block" />
-                                                    Hapus
-                                                </button>
+                                        <div className="p-4 sm:p-5 pt-0">
+                                            <div className="pt-3 border-t border-slate-100">
+                                                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                                                    <button 
+                                                        onClick={() => navigate(`/course/${course.id}`)}
+                                                        className="py-1.5 px-1 sm:px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
+                                                    >
+                                                        <FileText size={12} className="hidden sm:block" />
+                                                        Silabus
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => navigate(`/instructor/manage-course/${course.id}`)}
+                                                        className="py-1.5 px-1 sm:px-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition text-center cursor-pointer shadow-sm"
+                                                    >
+                                                        Kelola
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDeleteCourse(course.id, course.title)}
+                                                        className="py-1.5 px-1 sm:px-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-100 text-[10px] sm:text-[11px] font-bold rounded-lg sm:rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
+                                                        title="Hapus Kelas Permanen"
+                                                    >
+                                                        <Trash2 size={12} className="hidden sm:block" />
+                                                        Hapus
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
