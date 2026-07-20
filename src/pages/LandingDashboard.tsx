@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import gambarSimulasi from "../assets/8.jpg";
 import { Menu, X } from 'lucide-react'; // 👈 Tambahkan ikon Menu untuk Mobile Hamburger
 
 interface CustomService {
@@ -170,7 +171,7 @@ export default function LandingDashboard() {
         <div className="hidden lg:block absolute right-12 bottom-0 top-12 w-80 bg-white p-3 pb-8 rounded-t-xl shadow-2xl rotate-2 translate-y-4">
             {/* 🚀 UPDATE: Mengubah gradasi di dalam box kartu hiasan menjadi biru (from-blue-100 to-sky-100 dan text-blue-900) */}
             <img 
-    src="src/assets/8.jpg" 
+    src={gambarSimulasi}
     alt="Simulasi Angkutan B3" 
     className="w-full h-56 object-cover rounded-lg shadow-inner border border-slate-100"
     onError={(e) => {
