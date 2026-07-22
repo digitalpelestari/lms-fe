@@ -96,7 +96,7 @@ export default function App() {
                         <span className="text-[#7b92e8]">Tanpa Batas.</span>
                     </h1>
                     <p className="text-[#a8b8e8] text-base leading-relaxed max-w-sm">
-                        Akses ribuan materi pembelajaran, lacak kemajuan belajarmu, dan raih
+                        Akses  materi pembelajaran, lacak kemajuan belajarmu, dan raih
                         sertifikasi yang diakui secara nasional.
                     </p>
                 </div>
