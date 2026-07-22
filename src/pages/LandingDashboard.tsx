@@ -205,13 +205,19 @@ export default function LandingDashboard() {
 
                     <div className="lg:col-span-2 flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 bg-blue-600 text-white p-5 sm:p-6 rounded-2xl shadow-lg shadow-blue-100 flex flex-col justify-between min-h-[100px] sm:min-h-[120px]">
-                            <span className="text-3xl sm:text-4xl font-black tracking-tight">8,291</span>
-                            <span className="text-[11px] sm:text-xs text-blue-100 font-medium mt-1 sm:mt-2">Active drivers & logistics staff accessing resources</span>
-                        </div>
-                        <div className="flex-1 bg-slate-900 text-white p-5 sm:p-6 rounded-2xl shadow-lg shadow-slate-200 flex flex-col justify-between min-h-[100px] sm:min-h-[120px]">
-                            <span className="text-3xl sm:text-4xl font-black tracking-tight">914</span>
-                            <span className="text-[11px] sm:text-xs text-slate-400 font-medium mt-1 sm:mt-2">Accredited safety courses made for you</span>
-                        </div>
+    <span className="text-3xl sm:text-4xl font-black tracking-tight font-mono">8,916</span>
+    <span className="text-[11px] sm:text-xs text-blue-100 font-semibold mt-1 sm:mt-2 uppercase tracking-wider">
+        Total Pengemudi & Staf Logistik Aktif
+    </span>
+</div>
+
+{/* ⚫ KARTU BAWAH: TOTAL PERUSAHAAN (COMPANY) */}
+<div className="flex-1 bg-slate-900 text-white p-5 sm:p-6 rounded-2xl shadow-lg shadow-slate-200 flex flex-col justify-between min-h-[100px] sm:min-h-[120px]">
+    <span className="text-3xl sm:text-4xl font-black tracking-tight font-mono">1,325</span>
+    <span className="text-[11px] sm:text-xs text-slate-400 font-semibold mt-1 sm:mt-2 uppercase tracking-wider">
+        Perusahaan Transportasi & Mitra Terdaftar
+    </span>
+</div>
                     </div>
                 </div>
             </section>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
-import { Eye, EyeOff, BookOpen, ArrowRight, GraduationCap, Users, BarChart2 } from "lucide-react";
+import { Eye, EyeOff, BookOpen, ArrowRight, GraduationCap, Users, BarChart2, Building2, ShieldCheck, Award } from "lucide-react";
 
 export default function App() {
     const navigate = useNavigate(); 
@@ -53,11 +53,11 @@ export default function App() {
     };
 
     const stats = [
-        { icon: GraduationCap, value: "12.400+", label: "Pelajar Aktif" },
-        { icon: BookOpen, value: "340+", label: "Kursus Tersedia" },
-        { icon: Users, value: "180+", label: "Instruktur" },
-        { icon: BarChart2, value: "94%", label: "Tingkat Penyelesaian" },
-    ];
+    { icon: Users, value: "8,916", label: "Pengemudi Bersertifikasi" },
+    { icon: Building2, value: "1,325", label: "Perusahaan Mitra" },
+    { icon: ShieldCheck, value: "100%", label: "Standar Kepatuhan K3" },
+    { icon: Award, value: "24/7", label: "Kesiapan Uji Kompetensi" },
+];
 
     return (
         <div className="min-h-screen w-full flex font-sans antialiased">
