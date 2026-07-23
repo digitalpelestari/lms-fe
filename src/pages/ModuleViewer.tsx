@@ -363,17 +363,22 @@ export default function ModuleViewer() {
                             <div className="flex-1 w-full bg-slate-50 rounded-lg md:rounded-xl overflow-hidden border border-slate-200/60 flex flex-col justify-center items-center relative min-h-[450px] sm:min-h-[550px]">
                                 
                                 {activeSubModule.type === 'Video' && (
-                                    <video 
-                                        key={activeSubModule.id}
-                                        src={activeSubModule.file_url} 
-                                        controls 
-                                        playsInline                  
-                                        webkit-playsinline="true"    
-                                        preload="metadata"           
-                                        controlsList="nodownload"    
-                                        className="w-full h-full object-contain max-h-[280px] sm:max-h-[480px]"
-                                        onEnded={() => markMaterialAsComplete(activeSubModule.id)}
-                                    />
+                                    <video
+  key={activeSubModule.id}
+  controls
+  playsInline
+  muted
+  preload="metadata"
+  className="w-full h-full object-contain max-h-[280px] sm:max-h-[480px]"
+  onEnded={() => markMaterialAsComplete(activeSubModule.id)}
+  onError={(e) => {
+    console.log("Video Error:", e.currentTarget.error);
+    console.log("Video URL:", activeSubModule.file_url);
+  }}
+>
+  <source src={activeSubModule.file_url} type="video/mp4" />
+  Browser Anda tidak mendukung video.
+</video>
                                 )}
 
                                 {/* 🚀 PERBAIKAN UTAMA EMBED PDF UNTUK HP */}
