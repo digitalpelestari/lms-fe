@@ -190,33 +190,12 @@ export default function ManageCourse() {
     };
 
     // 🚀 UPDATE: Menerima semua ukuran file tanpa batasan (Losss!)
-   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const rawFile = e.target.files[0];
-            const extension = rawFile.name.split('.').pop()?.toLowerCase();
-
-            // Cek jika formatnya PPT/PPTX atau format materi lain dan ukurannya di atas 5MB
-            if (rawFile.size > 5 * 1024 * 1024) {
-                // Tampilkan pesan edukatif agar user melakukan kompresi/resize mandiri
-                alert(
-                    `⚠️ Ukuran file terlalu besar (${(rawFile.size / (1024 * 1024)).toFixed(2)} MB).\n\n` +
-                    `Maksimal ukuran file yang diizinkan adalah 5 MB agar lancar diakses oleh pengemudi melalui HP.\n\n` +
-                    `Solusi:\n` +
-                    `1. Segera resize/kompres gambar-gambar besar yang ada di dalam dokumen Anda.\n` +
-                    `2. Jika berupa presentasi, gunakan menu 'Save As PDF' di Microsoft PowerPoint dengan opsi 'Minimum Size' sebelum diunggah.`
-                );
-
-                // Reset input file di browser agar form bersih kembali
-                e.target.value = '';
-                setSelectedFile(null);
-                return;
-            }
-
-            // Jika ukuran aman (< 5MB), lolos validasi dan masuk ke state
-            setSelectedFile(rawFile);
-            setErrorMessage(''); // Bersihkan error lama jika ada
-        }
-    };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+        setSelectedFile(e.target.files[0]);
+        setErrorMessage(''); // Bersihkan error lama jika ada
+    }
+};
 
     const handleQuizTextChange = (index: number, field: 'question' | 'correct_answer', value: string) => {
         const updatedQuestions = [...quizQuestions];
