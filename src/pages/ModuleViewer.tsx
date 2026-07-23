@@ -13,7 +13,8 @@ import {
     Menu,
     X,
     Check,
-    ImageIcon 
+    ImageIcon,
+    ExternalLink
 } from 'lucide-react';
 
 interface SubModule {
@@ -46,17 +47,6 @@ interface QuizQuestion {
         d: QuizOption;
     };
     answer: 'a' | 'b' | 'c' | 'd'; 
-}
-
-interface GradeRow {
-    id: number;
-    sub_module_id: number | string; 
-    name: string;
-    nik: string;
-    quiz_title?: string;
-    score: number;
-    status: 'LULUS' | 'REMIDI';
-    formatted_date?: string; 
 }
 
 export default function ModuleViewer() {
@@ -153,7 +143,6 @@ export default function ModuleViewer() {
         }
     };
 
-    // 👈 LOGIKA FIX: Deep Parsing agar string ter-escape backslash MySQL terurai menjadi objek bersih
     const getQuizQuestions = (): QuizQuestion[] => {
         if (!activeSubModule || activeSubModule.type !== 'Kuis') return [];
         try {
@@ -331,11 +320,11 @@ export default function ModuleViewer() {
                 </aside>
 
                 {/* AREA UTAMA KANAN */}
-                <main className="flex-1 bg-slate-100 flex flex-col overflow-y-auto p-3 sm:p-6 w-full">
+                <main className="flex-1 bg-slate-100 flex flex-col overflow-y-auto p-2 sm:p-6 w-full">
                     {activeSubModule ? (
-                        <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-6 flex flex-col flex-1 min-h-[calc(100vh-8.5rem)] md:min-h-[500px]">
+                        <div className="bg-white rounded-xl md:rounded-2xl border border-slate-200 shadow-xs p-3 sm:p-6 flex flex-col flex-1 min-h-[calc(100vh-8.5rem)] md:min-h-[500px]">
                             
-                            <div className="mb-4 border-b border-slate-100 pb-3 sm:pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="mb-3 sm:mb-4 border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div className="min-w-0">
                                     <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-100 border text-slate-600 font-mono uppercase rounded">
                                         Format: {activeSubModule.type}
@@ -343,48 +332,67 @@ export default function ModuleViewer() {
                                     <h2 className="text-sm md:text-base font-bold text-slate-900 mt-1 tracking-tight break-words">{activeSubModule.title}</h2>
                                 </div>
 
-                                {!checkIsCompleted(activeSubModule.isCompleted) && ['PDF', 'PPT', 'Video'].includes(activeSubModule.type) && (
-                                    <button
-                                        onClick={() => markMaterialAsComplete(activeSubModule.id)}
-                                        disabled={isSavingProgress}
-                                        className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white text-[11px] font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer self-start sm:self-auto flex-shrink-0"
-                                    >
-                                        <Check size={13} />
-                                        Tandai Selesai Belajar
-                                    </button>
-                                )}
+                                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                                    {/* 📄 TOMBOL TAMBAHAN BUKA TAB BARU KHUSUS PDF & PPT */}
+                                    {['PDF', 'PPT'].includes(activeSubModule.type) && (
+                                        <a
+                                            href={activeSubModule.file_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-xl flex items-center gap-1.5 transition flex-shrink-0"
+                                            title="Buka File di Layar Penuh"
+                                        >
+                                            <ExternalLink size={13} />
+                                            Layar Penuh
+                                        </a>
+                                    )}
+
+                                    {!checkIsCompleted(activeSubModule.isCompleted) && ['PDF', 'PPT', 'Video'].includes(activeSubModule.type) && (
+                                        <button
+                                            onClick={() => markMaterialAsComplete(activeSubModule.id)}
+                                            disabled={isSavingProgress}
+                                            className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 text-white text-[11px] font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer self-start sm:self-auto flex-shrink-0"
+                                        >
+                                            <Check size={13} />
+                                            Tandai Selesai
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="flex-1 w-full bg-slate-50 rounded-lg md:rounded-xl overflow-hidden border border-slate-200/60 flex flex-col justify-center items-center relative min-h-[300px] sm:min-h-[400px]">
+                            <div className="flex-1 w-full bg-slate-50 rounded-lg md:rounded-xl overflow-hidden border border-slate-200/60 flex flex-col justify-center items-center relative min-h-[450px] sm:min-h-[550px]">
                                 
                                 {activeSubModule.type === 'Video' && (
-                                <video 
-                                    key={activeSubModule.id}
-                                    src={activeSubModule.file_url} 
-                                    controls 
-                                    playsInline                  
-                                    webkit-playsinline="true"    
-                                    preload="metadata"           
-                                    controlsList="nodownload"    
-                                    className="w-full h-full object-contain max-h-[240px] sm:max-h-[450px]"
-                                    onEnded={() => markMaterialAsComplete(activeSubModule.id)}
-                                />
-                            )}
-
-                                {activeSubModule.type === 'PDF' && (
-                                    <iframe 
+                                    <video 
                                         key={activeSubModule.id}
                                         src={activeSubModule.file_url} 
-                                        className="w-full h-full min-h-[320px] sm:min-h-[450px] border-none flex-1"
-                                        title={activeSubModule.title}
+                                        controls 
+                                        playsInline                  
+                                        webkit-playsinline="true"    
+                                        preload="metadata"           
+                                        controlsList="nodownload"    
+                                        className="w-full h-full object-contain max-h-[280px] sm:max-h-[480px]"
+                                        onEnded={() => markMaterialAsComplete(activeSubModule.id)}
                                     />
+                                )}
+
+                                {/* 🚀 PERBAIKAN UTAMA EMBED PDF UNTUK HP */}
+                                {activeSubModule.type === 'PDF' && (
+                                    <div className="w-full h-full min-h-[450px] sm:min-h-[550px] flex flex-col relative">
+                                        <iframe 
+                                            key={activeSubModule.id}
+                                            src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(activeSubModule.file_url || '')}`} 
+                                            className="w-full h-full min-h-[450px] sm:min-h-[550px] border-none flex-1 bg-white"
+                                            title={activeSubModule.title}
+                                        />
+                                    </div>
                                 )}
 
                                 {activeSubModule.type === 'PPT' && (
                                     <iframe 
                                         key={activeSubModule.id}
                                         src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(activeSubModule.file_url || '')}`} 
-                                        className="w-full h-full min-h-[320px] sm:min-h-[450px] border-none flex-1 bg-white"
+                                        className="w-full h-full min-h-[450px] sm:min-h-[550px] border-none flex-1 bg-white"
                                         title={activeSubModule.title}
                                         frameBorder="0"
                                     />
@@ -410,7 +418,6 @@ export default function ModuleViewer() {
                                                     Soal Evaluasi: {currentQuestion.question}
                                                 </h3>
 
-                                                {/* RENDERING GAMBAR SOAL UTAMA LOKAL */}
                                                 {currentQuestion.question_image && (
                                                     <div className="mb-4 bg-slate-50 border border-slate-200 rounded-xl p-2 flex justify-center">
                                                         <img 
@@ -424,7 +431,6 @@ export default function ModuleViewer() {
                                                     </div>
                                                 )}
                                                 
-                                                {/* GRID VIEW UTK JAWABAN TEXT / GAMBAR */}
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                                     {(['a', 'b', 'c', 'd'] as const).map((key) => {
                                                         const optionData = currentQuestion.options?.[key] || (currentQuestion as any)[key];
@@ -456,7 +462,6 @@ export default function ModuleViewer() {
                                                                     <span className="break-words flex-1 text-[11px] leading-tight">{optionText || <span className="text-slate-300 italic">Pilihan Bergambar</span>}</span>
                                                                 </div>
 
-                                                                {/* RENDERING GAMBAR PILIHAN JAWABAN LOKAL */}
                                                                 {hasImage && optionImageUrl && (
                                                                     <div className="w-full h-28 bg-slate-50 border border-slate-100 rounded-lg overflow-hidden flex items-center justify-center mt-1">
                                                                         <img 
