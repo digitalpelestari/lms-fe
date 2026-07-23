@@ -128,29 +128,30 @@ export default function ManageCourse() {
         fetchManagementData();
     }, [id, filterDate]);
 
-    const handleCreateBab = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newBabTitle.trim()) return;
+ const handleCreateBab = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBabTitle.trim()) return;
 
-        const token = localStorage.getItem("token");
-        setIsCreatingBab(true);
-        setErrorMessage('');
-        setSuccessMessage('');
+    const token = localStorage.getItem("token");
+    setIsCreatingBab(true);
+    setErrorMessage('');
+    setSuccessMessage('');
 
-        try {
-            await axios.post(`https://api.pelestari.id/api/topic-groups`, 
-                { course_id: id, title: newBabTitle },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setSuccessMessage("Bab baru berhasil ditambahkan!");
-            setNewBabTitle('');
-            fetchManagementData();
-        } catch (err: any) {
-            setErrorMessage(err.response?.data?.message || "Gagal membuat bab baru.");
-        } finally {
-            setIsCreatingBab(false);
-        }
-    };
+    try {
+        // 🛠️ FIX: Ubah URL agar membawa ID kelas (`id`) sesuai rute Laravel
+        await axios.post(`https://api.pelestari.id/api/courses/${id}/topic-groups`, 
+            { title: newBabTitle },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSuccessMessage("Bab baru berhasil ditambahkan!");
+        setNewBabTitle('');
+        fetchManagementData();
+    } catch (err: any) {
+        setErrorMessage(err.response?.data?.message || "Gagal membuat bab baru.");
+    } finally {
+        setIsCreatingBab(false);
+    }
+};
 
     const handleDeleteTopicGroup = async (groupId: number | string, groupTitle: string) => {
         if (window.confirm(`Apakah Anda yakin ingin menghapus Bab "${groupTitle}"? Semua berkas materi di dalam bab ini akan ikut terhapus permanen.`)) {
