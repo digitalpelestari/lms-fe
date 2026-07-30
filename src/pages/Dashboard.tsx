@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "axios"; 
 import { 
@@ -15,7 +15,10 @@ import {
     Clock,
     Trash2,
     KeyRound,
-    UserPlus 
+    UserPlus,
+    Users,
+    Shield,
+    ArrowLeft
 } from "lucide-react";
 
 interface Course {
@@ -27,11 +30,18 @@ interface Course {
     instructor_name?: string;
 }
 
+interface Participant {
+    id: number;
+    name: string;
+    nik: string;
+    level: 'ABB' | 'AKBB';
+}
+
 // 🎨 DAFTAR 3 KOMBINASI GRADASI WARNA SOLID (HIJAU, BIRU, AMBER)
 const CARD_GRADIENTS = [
-    "from-emerald-500 to-teal-600",   // 🟢 Warna 1: Hijau Fresh (Untuk ID 1, 4, 7, dst)
-    "from-blue-500 to-indigo-600",    // 🔵 Warna 2: Biru Profesional (Untuk ID 2, 5, 8, dst)
-    "from-amber-500 to-orange-600"    // 🟡 Warna 3: Kuning/Amber Keren (Untuk ID 3, 6, 9, dst)
+    "from-emerald-500 to-teal-600",   // 🟢 Warna 1: Hijau Fresh
+    "from-blue-500 to-indigo-600",    // 🔵 Warna 2: Biru Profesional
+    "from-amber-500 to-orange-600"    // 🟡 Warna 3: Kuning/Amber Keren
 ];
 
 export default function Dashboard() {
@@ -40,6 +50,11 @@ export default function Dashboard() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+
+    // 👥 State Khusus Fitur Manajemen Peserta (Instruktur)
+    const [isViewingParticipants, setIsViewingParticipants] = useState(false);
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [participantMessage, setParticipantMessage] = useState<string>('');
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -68,6 +83,52 @@ export default function Dashboard() {
 
         fetchCourses();
     }, [navigate]);
+
+    // 👥 Fungsi Ambil Data Peserta untuk Instruktur
+    const fetchParticipants = async () => {
+        const token = localStorage.getItem("token");
+        try {
+            const res = await axiosInstance.get('https://api.pelestari.id/api/instructor/participants', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setParticipants(res.data.participants || []);
+        } catch (err) {
+            console.error("Gagal mengambil data peserta:", err);
+        }
+    };
+
+    // 👥 Fungsi Ubah Level Peserta (ABB <-> AKBB)
+    const handleToggleLevel = async (id: number, currentLevel: string) => {
+        const newLevel = currentLevel === 'ABB' ? 'AKBB' : 'ABB';
+        const token = localStorage.getItem("token");
+
+        try {
+            await axiosInstance.put(`https://api.pelestari.id/api/instructor/participants/${id}/level`, 
+                { level: newLevel },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setParticipantMessage(`Berhasil mengubah level peserta menjadi ${newLevel}`);
+            fetchParticipants();
+        } catch (err) {
+            alert("Gagal mengubah level peserta.");
+        }
+    };
+
+    // 👥 Fungsi Hapus/Blokir Peserta
+    const handleDeleteParticipant = async (id: number, name: string) => {
+        if (window.confirm(`Yakin ingin menghapus peserta "${name}" dari sistem?`)) {
+            const token = localStorage.getItem("token");
+            try {
+                await axiosInstance.delete(`https://api.pelestari.id/api/instructor/participants/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setParticipantMessage(`Peserta ${name} berhasil dihapus.`);
+                fetchParticipants();
+            } catch (err) {
+                alert("Gagal menghapus peserta.");
+            }
+        }
+    };
 
     const handleLogout = () => {
         localStorage.clear();
@@ -102,7 +163,6 @@ export default function Dashboard() {
         return matchesSearch;
     });
 
-    // 💡 Helper fungsi untuk mengambil class gradasi warna berdasarkan Modulo ID
     const getCourseGradient = (courseId: number) => {
         const index = (Number(courseId) - 1) % 3;
         return CARD_GRADIENTS[index] || CARD_GRADIENTS[0];
@@ -177,6 +237,24 @@ export default function Dashboard() {
                     
                     {isInstructor && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 lg:mt-0 w-full lg:w-auto">
+                            {/* 👥 TOMBOL MENU PANEL PESERTA */}
+                            <button
+                                onClick={() => {
+                                    if (!isViewingParticipants) {
+                                        fetchParticipants();
+                                    }
+                                    setIsViewingParticipants(!isViewingParticipants);
+                                }}
+                                className={`h-10 px-4 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto ${
+                                    isViewingParticipants 
+                                    ? 'bg-indigo-600 text-white' 
+                                    : 'bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200'
+                                }`}
+                            >
+                                {isViewingParticipants ? <ArrowLeft size={15} /> : <Users size={15} className="flex-shrink-0" />}
+                                {isViewingParticipants ? "Kembali ke Kelas" : "Data Peserta"}
+                            </button>
+
                             <button
                                 onClick={() => navigate("/instructor/register-bulk")}
                                 className="h-10 px-4 bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto"
@@ -196,7 +274,7 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* 3. ANALYTICS QUICK STATS CARD */}
+                {/* 3. ANALYTICS QUICK STATS CARD (UNTUK PELAJAR) */}
                 {isStudent && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                         <div className="bg-white border border-slate-200/60 rounded-2xl p-4 flex items-center gap-4 shadow-xs">
@@ -257,24 +335,16 @@ export default function Dashboard() {
                                         className="bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-md hover:border-indigo-500 transition-all duration-300 cursor-pointer flex flex-col justify-between group overflow-hidden"
                                     >
                                         <div>
-                                            {/* 🚀 MURNI GRADASI SOLID (TAG IMG DIHAPUS TOTAL) */}
                                             <div className={`h-24 sm:h-28 w-full relative flex items-end p-4 flex-shrink-0 bg-gradient-to-br ${getCourseGradient(course.id)} group-hover:brightness-105 transition-all duration-300`}>
-                                                
-                                                {/* Pola garis abstrak halus di background */}
                                                 <div className="absolute inset-0 bg-white/5 opacity-20 mix-blend-overlay pointer-events-none"></div>
-
-                                                {/* Inisial ID Kelas Besar Transparan di Pojok Kanan Atas */}
                                                 <div className="absolute right-2 top-0 text-5xl font-black text-white/15 select-none tracking-tighter font-mono">
                                                     #{course.id}
                                                 </div>
-
-                                                {/* Badge Level mengambang */}
                                                 <div className="bg-white/25 backdrop-blur-md text-white text-[9px] font-extrabold tracking-wider font-mono px-2 py-0.5 rounded border border-white/10 uppercase shadow-xs">
                                                     Tingkat: {course.level}
                                                 </div>
                                             </div>
 
-                                            {/* 📄 CONTAINER TEKS BAWAH */}
                                             <div className="p-4 sm:p-5 pb-0">
                                                 <h3 className="font-black text-slate-900 text-xs sm:text-sm mb-1.5 uppercase tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[36px] leading-snug">
                                                     {course.title}
@@ -299,7 +369,7 @@ export default function Dashboard() {
                 )}
 
                 {/* ================= VIEWPORT COMPONENT: INSTRUKTUR ================= */}
-                {isInstructor && (
+                {isInstructor && !isViewingParticipants && (
                     <div className="flex flex-col gap-4">
                         <div className="border-b border-slate-200 pb-3">
                             <h2 className="text-sm font-bold text-slate-900 tracking-wider uppercase flex items-center gap-2">
@@ -320,7 +390,6 @@ export default function Dashboard() {
                                         className="bg-white border border-slate-200/80 rounded-2xl shadow-xs flex flex-col justify-between group overflow-hidden"
                                     >
                                         <div>
-                                            {/* 🚀 MURNI GRADASI SOLID DI PANEL INSTRUKTUR */}
                                             <div className={`h-24 sm:h-28 w-full relative flex items-start p-4 flex-shrink-0 bg-gradient-to-br ${getCourseGradient(course.id)} group-hover:brightness-105 transition-all duration-300`}>
                                                 <div className="absolute inset-0 bg-white/5 opacity-20 mix-blend-overlay pointer-events-none"></div>
 
@@ -338,7 +407,6 @@ export default function Dashboard() {
                                                 </div>
                                             </div>
 
-                                            {/* 📄 CONTAINER KONTEN TEKS BAWAH */}
                                             <div className="p-4 sm:p-5 pb-0">
                                                 <h3 className="font-bold text-slate-900 text-sm mb-1.5 uppercase tracking-tight line-clamp-2 min-h-[40px]">
                                                     {course.title}
@@ -380,6 +448,83 @@ export default function Dashboard() {
                                 ))}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* ================= VIEWPORT KUSUS: PANEL MANAJEMEN PESERTA (INSTRUKTUR) ================= */}
+                {isInstructor && isViewingParticipants && (
+                    <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-5 sm:p-6 space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-2">
+                            <div>
+                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                                    <Users size={16} className="text-indigo-600" /> Manajemen Panel Seluruh Peserta
+                                </h2>
+                                <p className="text-xs text-slate-400 mt-0.5">Kelola tingkat level akses (ABB / AKBB) dan hapus data peserta dari sistem.</p>
+                            </div>
+                            <span className="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+                                Total: {participants.length} Peserta
+                            </span>
+                        </div>
+
+                        {participantMessage && (
+                            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center justify-between">
+                                <span>{participantMessage}</span>
+                                <button onClick={() => setParticipantMessage('')} className="text-emerald-700 font-bold px-2">×</button>
+                            </div>
+                        )}
+
+                        <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table className="w-full text-left border-collapse text-xs min-w-[600px]">
+                                <thead>
+                                    <tr className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
+                                        <th className="p-3">Nama Peserta</th>
+                                        <th className="p-3">NIK</th>
+                                        <th className="p-3 text-center">Level Aktif</th>
+                                        <th className="p-3 text-center">Aksi Ubah Level</th>
+                                        <th className="p-3 text-center">Hapus Akun</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 font-medium text-slate-700 bg-white">
+                                    {participants.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="text-center py-10 text-slate-400 italic">Belum ada data peserta terdaftar.</td>
+                                        </tr>
+                                    ) : (
+                                        participants.map((p) => (
+                                            <tr key={p.id} className="hover:bg-slate-50/50 transition">
+                                                <td className="p-3 font-bold text-slate-900">{p.name}</td>
+                                                <td className="p-3 font-mono text-slate-500 tracking-wider">{p.nik || '-'}</td>
+                                                <td className="p-3 text-center">
+                                                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md font-mono ${
+                                                        p.level === 'AKBB' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-amber-50 text-amber-700 border border-amber-100'
+                                                    }`}>
+                                                        {p.level || 'ABB'}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3 text-center">
+                                                    <button 
+                                                        onClick={() => handleToggleLevel(p.id, p.level)}
+                                                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold rounded-lg transition inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                                                    >
+                                                        <Shield size={12} className="text-indigo-600" /> 
+                                                        Ubah ke {p.level === 'ABB' ? 'AKBB' : 'ABB'}
+                                                    </button>
+                                                </td>
+                                                <td className="p-3 text-center">
+                                                    <button 
+                                                        onClick={() => handleDeleteParticipant(p.id, p.name)}
+                                                        className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                                                        title="Hapus Peserta"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>
