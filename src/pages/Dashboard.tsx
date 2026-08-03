@@ -86,16 +86,19 @@ export default function Dashboard() {
 
     // 👥 Fungsi Ambil Data Peserta untuk Instruktur
     const fetchParticipants = async () => {
-        const token = localStorage.getItem("token");
-        try {
-            const res = await axiosInstance.get('https://api.pelestari.id/api/instructor/participants', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setParticipants(res.data.participants || []);
-        } catch (err) {
-            console.error("Gagal mengambil data peserta:", err);
-        }
-    };
+    const token = localStorage.getItem("token");
+    try {
+        const res = await axiosInstance.get('https://api.pelestari.id/api/instructor/participants', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Cek apakah res.data berupa Array langsung atau Object
+        const data = Array.isArray(res.data) ? res.data : (res.data.participants || []);
+        setParticipants(data);
+    } catch (err) {
+        console.error("Gagal mengambil data peserta:", err);
+    }
+};
 
     // 👥 Fungsi Ubah Level Peserta (ABB <-> AKBB)
     const handleToggleLevel = async (id: number, currentLevel: string) => {
