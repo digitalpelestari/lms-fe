@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
-import { Eye, EyeOff, BookOpen, ArrowRight, GraduationCap, Users, BarChart2, Building2, ShieldCheck, Award } from "lucide-react";
+import { Eye, EyeOff, BookOpen, ArrowRight, Users, Building2, ShieldCheck, Award } from "lucide-react";
 
 export default function App() {
     const navigate = useNavigate(); 
     const [showPassword, setShowPassword] = useState(false);
     
-    // PERBAIKAN: Ganti state email menjadi nik
     const [nik, setNik] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
+    // State statistik pengunjung/pengemudi agar reaktif
+    const [driverCount, setDriverCount] = useState<number>(8916);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // PERBAIKAN: Validasi input nik
         if (!nik || !password) {
             setError("Harap isi NIK dan kata sandi.");
             return;
@@ -27,22 +28,28 @@ export default function App() {
         setIsLoading(true);
 
         try {
-            // 1. Tembak API Login ke Backend Laravel menggunakan payload nik
-            const response = await axios.post('https://api.pelestari.id/api/login', {
+            // 1. Tembak API Login ke Backend Laravel
+            const response = await axios.post("https://api.pelestari.id/api/login", {
                 nik: nik,
                 password: password
             });
 
-            // 2. Simpan token rahasia & data user ke localStorage browser
-            localStorage.setItem('token', response.data.access_token);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            // 2. Simpan token & user session
+            localStorage.setItem("token", response.data.access_token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
 
-            // 3. Alihkan (redirect) pelajar ke halaman dashboard kursus utama
-            navigate('/dashboard');
+            // 3. Update counter: gunakan data aktual dari backend jika tersedia, atau auto-increment
+            if (response.data.stats?.total_drivers) {
+                setDriverCount(response.data.stats.total_drivers);
+            } else {
+                setDriverCount((prev) => prev + 1);
+            }
+
+            // 4. Redirect ke dashboard kursus
+            navigate("/dashboard");
             
         } catch (err: any) {
-            // Ambil pesan error validasi langsung dari Laravel
-            if (err.response && err.response.data) {
+            if (err.response && err.response.data && err.response.data.message) {
                 setError(err.response.data.message);
             } else {
                 setError("Gagal terhubung ke server Backend.");
@@ -53,11 +60,11 @@ export default function App() {
     };
 
     const stats = [
-    { icon: Users, value: "8,916", label: "Pengemudi Bersertifikasi" },
-    { icon: Building2, value: "1,325", label: "Perusahaan Mitra" },
-    { icon: ShieldCheck, value: "100%", label: "Standar Kepatuhan K3" },
-    { icon: Award, value: "24/7", label: "Kesiapan Uji Kompetensi" },
-];
+        { icon: Users, value: driverCount.toLocaleString("id-ID"), label: "Pengemudi Bersertifikasi" },
+        { icon: Building2, value: "1,325", label: "Perusahaan Mitra" },
+        { icon: ShieldCheck, value: "100%", label: "Standar Kepatuhan K3" },
+        { icon: Award, value: "24/7", label: "Kesiapan Uji Kompetensi" },
+    ];
 
     return (
         <div className="min-h-screen w-full flex font-sans antialiased">
@@ -96,7 +103,7 @@ export default function App() {
                         <span className="text-[#7b92e8]">Tanpa Batas.</span>
                     </h1>
                     <p className="text-[#a8b8e8] text-base leading-relaxed max-w-sm">
-                        Akses  materi pembelajaran, lacak kemajuan belajarmu, dan raih
+                        Akses materi pembelajaran, lacak kemajuan belajarmu, dan raih
                         sertifikasi yang diakui secara nasional.
                     </p>
                 </div>
@@ -208,10 +215,11 @@ export default function App() {
                                 role="checkbox"
                                 aria-checked={rememberMe}
                                 onClick={() => setRememberMe(!rememberMe)}
-                                className={`w-4 h-4 rounded-sm border flex items-center justify-center flex-shrink-0 transition-all duration-150 ${rememberMe
-                                    ? "bg-[#1d2b6b] border-[#1d2b6b]"
-                                    : "bg-white border-[rgba(15,17,23,0.2)] hover:border-[#3d52a0]"
-                                    }`}
+                                className={`w-4 h-4 rounded-sm border flex items-center justify-center flex-shrink-0 transition-all duration-150 ${
+                                    rememberMe
+                                        ? "bg-[#1d2b6b] border-[#1d2b6b]"
+                                        : "bg-white border-[rgba(15,17,23,0.2)] hover:border-[#3d52a0]"
+                                }`}
                             >
                                 {rememberMe && (
                                     <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -225,19 +233,22 @@ export default function App() {
                                     </svg>
                                 )}
                             </button>
-                            <span className="text-sm text-[#6b7280] select-none cursor-pointer" onClick={() => setRememberMe(!rememberMe)}>
+                            <span 
+                                className="text-sm text-[#6b7280] select-none cursor-pointer" 
+                                onClick={() => setRememberMe(!rememberMe)}
+                            >
                                 Ingat saya selama 30 hari
                             </span>
                         </div>
 
-                        {/* Error */}
+                        {/* Error message */}
                         {error && (
                             <div className="px-3.5 py-2.5 bg-red-50 border border-red-200 rounded text-red-600 text-xs font-medium">
                                 {error}
                             </div>
                         )}
 
-                        {/* Submit */}
+                        {/* Submit button */}
                         <button
                             type="submit"
                             disabled={isLoading}
