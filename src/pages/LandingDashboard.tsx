@@ -408,7 +408,7 @@ export default function LandingDashboard() {
                                 </h3>
                                 <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
                                     <BookOpen size={16} className="text-blue-500" />
-                                    <span>Instruktur: <strong className="text-slate-700 font-semibold">{course.instructor_name}</strong></span>
+                                    {/* <span>Instruktur: <strong className="text-slate-700 font-semibold">{course.instructor_name}</strong></span> */}
                                 </div>
                             </div>
 
