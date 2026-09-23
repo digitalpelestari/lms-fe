@@ -18,7 +18,10 @@ import {
     UserPlus,
     Users,
     Shield,
-    ArrowLeft
+    ArrowLeft,
+    UserCheck,
+    X,
+    PlusCircle
 } from "lucide-react";
 
 interface Course {
@@ -35,6 +38,11 @@ interface Participant {
     name: string;
     nik: string;
     level: 'ABB' | 'AKBB';
+}
+
+interface BulkInstructorRow {
+    name: string;
+    nik: string;
 }
 
 // 🎨 DAFTAR 3 KOMBINASI GRADASI WARNA SOLID (HIJAU, BIRU, AMBER)
@@ -55,6 +63,14 @@ export default function Dashboard() {
     const [isViewingParticipants, setIsViewingParticipants] = useState(false);
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [participantMessage, setParticipantMessage] = useState<string>('');
+
+    // 🛡️ State Khusus Admin: Tambah Instruktur Bulk
+    const [isAddInstructorModalOpen, setIsAddInstructorModalOpen] = useState(false);
+    const [bulkInstructors, setBulkInstructors] = useState<BulkInstructorRow[]>([
+        { name: '', nik: '' }
+    ]);
+    const [isSubmittingBulk, setIsSubmittingBulk] = useState(false);
+    const [adminNotice, setAdminNotice] = useState<string | null>(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -86,19 +102,17 @@ export default function Dashboard() {
 
     // 👥 Fungsi Ambil Data Peserta untuk Instruktur
     const fetchParticipants = async () => {
-    const token = localStorage.getItem("token");
-    try {
-        const res = await axiosInstance.get('https://api.pelestari.id/api/instructor/participants', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        // Cek apakah res.data berupa Array langsung atau Object
-        const data = Array.isArray(res.data) ? res.data : (res.data.participants || []);
-        setParticipants(data);
-    } catch (err) {
-        console.error("Gagal mengambil data peserta:", err);
-    }
-};
+        const token = localStorage.getItem("token");
+        try {
+            const res = await axiosInstance.get('https://api.pelestari.id/api/instructor/participants', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = Array.isArray(res.data) ? res.data : (res.data.participants || []);
+            setParticipants(data);
+        } catch (err) {
+            console.error("Gagal mengambil data peserta:", err);
+        }
+    };
 
     // 👥 Fungsi Ubah Level Peserta (ABB <-> AKBB)
     const handleToggleLevel = async (id: number, currentLevel: string) => {
@@ -154,6 +168,87 @@ export default function Dashboard() {
         }
     };
 
+    // 🛡️ Helper Baris Form Bulk Instruktur
+    const handleAddRow = () => {
+        setBulkInstructors([...bulkInstructors, { name: '', nik: '' }]);
+    };
+
+    const handleRemoveRow = (index: number) => {
+        if (bulkInstructors.length === 1) return;
+        setBulkInstructors(bulkInstructors.filter((_, i) => i !== index));
+    };
+
+    const handleRowChange = (index: number, field: keyof BulkInstructorRow, value: string) => {
+        const updated = [...bulkInstructors];
+        updated[index][field] = value;
+        setBulkInstructors(updated);
+    };
+
+    // 🛡️ Submit Registrasi Bulk Instruktur
+    const handleCreateInstructorBulk = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const token = localStorage.getItem("token");
+
+        // 1. Filter baris yang terisi lengkap
+        const validRows = bulkInstructors.filter(
+            item => item.name.trim() !== '' && item.nik.trim() !== ''
+        );
+
+        if (validRows.length === 0) {
+            alert("Harap isi Nama dan NIK instruktur setidaknya pada satu baris.");
+            return;
+        }
+
+        // 2. Format data: password otomatis diambil dari 4 digit terakhir NIK
+        const formattedParticipants = validRows.map(item => {
+            const cleanNik = item.nik.trim();
+            // Ambil 4 karakter terakhir NIK sebagai default password
+            const autoPassword = cleanNik.length >= 4 ? cleanNik.slice(-4) : cleanNik;
+
+            return {
+                name: item.name.trim(),
+                nik: cleanNik,
+                password: autoPassword,
+                role: 'instruktur',
+                level: 'AKBB' // Default diatur ke AKBB tanpa ditampilkan di UI
+            };
+        });
+
+        setIsSubmittingBulk(true);
+
+        try {
+            await axiosInstance.post(
+                "https://api.pelestari.id/api/users/register-bulk",
+                { participants: formattedParticipants },
+                { 
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    } 
+                }
+            );
+
+            setAdminNotice(`Berhasil mendaftarkan ${formattedParticipants.length} instruktur! Password otomatis diset menggunakan 4 digit terakhir NIK.`);
+            setIsAddInstructorModalOpen(false);
+            setBulkInstructors([{ name: '', nik: '' }]);
+        } catch (err: any) {
+            console.error("Gagal mendaftarkan instruktur bulk:", err);
+            const backendMsg = err?.response?.data?.message;
+            const validationErrors = err?.response?.data?.errors;
+            
+            if (validationErrors) {
+                const errorDetails = Object.values(validationErrors).flat().join("\n");
+                alert(`Gagal validasi backend:\n${errorDetails}`);
+            } else {
+                alert(backendMsg || "Gagal memproses pendaftaran bulk instruktur.");
+            }
+        } finally {
+            setIsSubmittingBulk(false);
+        }
+    };
+
+    const isAdmin = user?.role === "admin" || user?.role === "administrator";
     const isInstructor = user?.role === "instruktur" || user?.role === "instructor";
     const isStudent = user?.role === "pelajar" || user?.role === "student";
     const userLevel = user?.level || "ABB"; 
@@ -193,7 +288,11 @@ export default function Dashboard() {
                             LMS Pelestari
                         </span>
                         <span className="text-[9px] sm:text-[10px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md font-mono tracking-wider uppercase mt-0.5 inline-block truncate">
-                            {isInstructor ? `Instructor • ${userLevel}` : `Student • ${userLevel}`}
+                            {isAdmin 
+                                ? "Super Admin" 
+                                : isInstructor 
+                                ? `Instructor • ${userLevel}` 
+                                : `Student • ${userLevel}`}
                         </span>
                     </div>
                 </div>
@@ -225,6 +324,14 @@ export default function Dashboard() {
             {/* MAIN PORTAL WRAPPER */}
             <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 flex flex-col gap-6 sm:gap-8">
                 
+                {/* NOTIFIKASI ADMIN */}
+                {adminNotice && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center justify-between shadow-xs">
+                        <span>{adminNotice}</span>
+                        <button onClick={() => setAdminNotice(null)} className="text-emerald-700 font-bold px-2 cursor-pointer">×</button>
+                    </div>
+                )}
+
                 {/* 2. WELCOME BANNER HEADLINE */}
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white border border-slate-200/60 rounded-2xl p-5 sm:p-6 shadow-xs">
                     <div>
@@ -232,49 +339,66 @@ export default function Dashboard() {
                             Selamat Datang Kembali, <span className="capitalize">{user?.name}</span>!
                         </h1>
                         <p className="text-[11px] sm:text-xs text-slate-400 mt-1 font-medium leading-relaxed">
-                            {isInstructor 
+                            {isAdmin 
+                                ? "Pusat kontrol administrator untuk pendaftaran instruktur, alokasi modul, dan pengawasan sistem."
+                                : isInstructor 
                                 ? `Panel manajemen kurikulum, alokasi kelas hirarki ${userLevel}, dan pemantauan kelulusan pengemudi B3.` 
                                 : `Akses silabus Micro Learning Anda untuk modul kepatuhan regulasi Kemenhub level ${userLevel}.`}
                         </p>
                     </div>
                     
-                    {isInstructor && (
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 lg:mt-0 w-full lg:w-auto">
-                            {/* 👥 TOMBOL MENU PANEL PESERTA */}
+                    {/* BUTTON ACTIONS GROUP */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 lg:mt-0 w-full lg:w-auto">
+                        
+                        {/* 🛡️ TOMBOL KHUSUS ROLE ADMIN: TAMBAH INSTRUKTUR BULK */}
+                        {isAdmin && (
                             <button
-                                onClick={() => {
-                                    if (!isViewingParticipants) {
-                                        fetchParticipants();
-                                    }
-                                    setIsViewingParticipants(!isViewingParticipants);
-                                }}
-                                className={`h-10 px-4 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto ${
-                                    isViewingParticipants 
-                                    ? 'bg-indigo-600 text-white' 
-                                    : 'bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200'
-                                }`}
-                            >
-                                {isViewingParticipants ? <ArrowLeft size={15} /> : <Users size={15} className="flex-shrink-0" />}
-                                {isViewingParticipants ? "Kembali ke Kelas" : "Data Peserta"}
-                            </button>
-
-                            <button
-                                onClick={() => navigate("/instructor/register-bulk")}
-                                className="h-10 px-4 bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto"
-                            >
-                                <UserPlus size={15} className="text-indigo-600 flex-shrink-0" />
-                                Registrasi Peserta
-                            </button>
-
-                            <button 
-                                onClick={() => navigate("/instructor/create-course")}
+                                onClick={() => setIsAddInstructorModalOpen(true)}
                                 className="h-10 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-100 transition-all cursor-pointer w-full sm:w-auto"
                             >
-                                <Plus size={15} className="flex-shrink-0" />
-                                Buat Kelas Baru
+                                <UserCheck size={15} className="flex-shrink-0" />
+                                Registrasi Instruktur Bulk
                             </button>
-                        </div>
-                    )}
+                        )}
+
+                        {/* TOMBOL INSTRUKTUR */}
+                        {isInstructor && (
+                            <>
+                                <button
+                                    onClick={() => {
+                                        if (!isViewingParticipants) {
+                                            fetchParticipants();
+                                        }
+                                        setIsViewingParticipants(!isViewingParticipants);
+                                    }}
+                                    className={`h-10 px-4 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto ${
+                                        isViewingParticipants 
+                                        ? 'bg-indigo-600 text-white' 
+                                        : 'bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200'
+                                    }`}
+                                >
+                                    {isViewingParticipants ? <ArrowLeft size={15} /> : <Users size={15} className="flex-shrink-0" />}
+                                    {isViewingParticipants ? "Kembali ke Kelas" : "Data Peserta"}
+                                </button>
+
+                                <button
+                                    onClick={() => navigate("/instructor/register-bulk")}
+                                    className="h-10 px-4 bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200 text-xs font-bold rounded-xl shadow-2xs flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto"
+                                >
+                                    <UserPlus size={15} className="text-indigo-600 flex-shrink-0" />
+                                    Registrasi Peserta
+                                </button>
+
+                                <button 
+                                    onClick={() => navigate("/instructor/create-course")}
+                                    className="h-10 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-100 transition-all cursor-pointer w-full sm:w-auto"
+                                >
+                                    <Plus size={15} className="flex-shrink-0" />
+                                    Buat Kelas Baru
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 {/* 3. ANALYTICS QUICK STATS CARD (UNTUK PELAJAR) */}
@@ -371,19 +495,19 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {/* ================= VIEWPORT COMPONENT: INSTRUKTUR ================= */}
-                {isInstructor && !isViewingParticipants && (
+                {/* ================= VIEWPORT COMPONENT: INSTRUKTUR & ADMIN (DAFTAR KELAS) ================= */}
+                {(isAdmin || (isInstructor && !isViewingParticipants)) && (
                     <div className="flex flex-col gap-4">
-                        <div className="border-b border-slate-200 pb-3">
+                        <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                             <h2 className="text-sm font-bold text-slate-900 tracking-wider uppercase flex items-center gap-2">
                                 <Settings size={16} className="text-indigo-600 flex-shrink-0" />
-                                Manajemen Kelas Aktif Anda
+                                {isAdmin ? "Manajemen Seluruh Kelas LMS" : "Manajemen Kelas Aktif Anda"}
                             </h2>
                         </div>
                         
                         {courses.length === 0 ? (
                             <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-8 sm:p-12 text-center text-slate-400 text-xs font-medium shadow-2xs">
-                                Anda belum membuat kelas pelatihan apa pun. Klik "Buat Kelas Baru" untuk memulai.
+                                Belum ada kelas pelatihan yang terdaftar di sistem.
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -454,7 +578,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {/* ================= VIEWPORT KUSUS: PANEL MANAJEMEN PESERTA (INSTRUKTUR) ================= */}
+                {/* ================= VIEWPORT KHUSUS: PANEL MANAJEMEN PESERTA (INSTRUKTUR) ================= */}
                 {isInstructor && isViewingParticipants && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-5 sm:p-6 space-y-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-2">
@@ -472,7 +596,7 @@ export default function Dashboard() {
                         {participantMessage && (
                             <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center justify-between">
                                 <span>{participantMessage}</span>
-                                <button onClick={() => setParticipantMessage('')} className="text-emerald-700 font-bold px-2">×</button>
+                                <button onClick={() => setParticipantMessage('')} className="text-emerald-700 font-bold px-2 cursor-pointer">×</button>
                             </div>
                         )}
 
@@ -531,6 +655,137 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+
+            {/* 🛡️ MODAL REGISTER BULK INSTRUKTUR (PASSWORD OTOMATIS 4 DIGIT TERAKHIR NIK) */}
+            {isAdmin && isAddInstructorModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-3xl w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
+                        
+                        {/* Header Modal */}
+                        <div className="flex justify-between items-center border-b border-slate-100 pb-3 flex-shrink-0">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                                    <UserCheck size={20} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-900 text-sm sm:text-base">Registrasi Bulk Instruktur</h3>
+                                    <p className="text-[11px] text-slate-400 font-medium">
+                                        Password otomatis diambil dari <strong>4 digit terakhir NIK</strong> & Level otomatis <strong>AKBB</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsAddInstructorModalOpen(false)}
+                                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Form Table Bulk */}
+                        <form onSubmit={handleCreateInstructorBulk} className="flex-1 flex flex-col min-h-0 space-y-4">
+                            
+                            <div className="flex-1 overflow-y-auto border border-slate-200 rounded-xl">
+                                <table className="w-full text-left text-xs border-collapse">
+                                    <thead className="bg-slate-50 sticky top-0 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                                        <tr>
+                                            <th className="p-3 w-12 text-center">No</th>
+                                            <th className="p-3">Nama Lengkap</th>
+                                            <th className="p-3">NIK (Nomor Induk Karyawan)</th>
+                                            <th className="p-3 w-36 text-center">Password Login</th>
+                                            <th className="p-3 w-14 text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 bg-white">
+                                        {bulkInstructors.map((row, index) => {
+                                            const previewPass = row.nik.trim().length >= 4 
+                                                ? row.nik.trim().slice(-4) 
+                                                : (row.nik.trim() || '••••');
+
+                                            return (
+                                                <tr key={index} className="hover:bg-slate-50/50">
+                                                    <td className="p-3 text-center font-mono font-bold text-slate-400">
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <input 
+                                                            type="text"
+                                                            required
+                                                            placeholder="Contoh: Capt. Budi Santoso"
+                                                            value={row.name}
+                                                            onChange={(e) => handleRowChange(index, 'name', e.target.value)}
+                                                            className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-indigo-500 transition"
+                                                        />
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <input 
+                                                            type="text"
+                                                            required
+                                                            placeholder="Contoh: 3201123456780001"
+                                                            value={row.nik}
+                                                            onChange={(e) => handleRowChange(index, 'nik', e.target.value)}
+                                                            className="w-full h-9 px-3 font-mono bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:border-indigo-500 transition"
+                                                        />
+                                                    </td>
+                                                    <td className="p-2 text-center">
+                                                        <span className="inline-block px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-md font-mono text-[11px] font-bold text-indigo-600 tracking-wider">
+                                                            {previewPass}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-2 text-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveRow(index)}
+                                                            disabled={bulkInstructors.length === 1}
+                                                            className="p-1.5 text-slate-400 hover:text-rose-500 disabled:opacity-20 cursor-pointer transition"
+                                                            title="Hapus Baris"
+                                                        >
+                                                            <Trash2 size={15} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Tombol Tambah Baris */}
+                            <div className="flex justify-between items-center pt-1">
+                                <button
+                                    type="button"
+                                    onClick={handleAddRow}
+                                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer transition"
+                                >
+                                    <PlusCircle size={14} className="text-indigo-600" /> Tambah Baris Baru
+                                </button>
+                                <span className="text-[11px] font-mono text-slate-400">
+                                    Total: {bulkInstructors.length} baris
+                                </span>
+                            </div>
+
+                            {/* Footer Aksi */}
+                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddInstructorModalOpen(false)}
+                                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingBulk}
+                                    className="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    {isSubmittingBulk ? "Memproses Data..." : "Simpan Semua Instruktur"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }
