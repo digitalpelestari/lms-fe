@@ -18,7 +18,7 @@ export default function SuperAdminLogin(): React.JSX.Element {
 
     try {
       // Endpoint login backend Laravel (sesuaikan URL API base Anda)
-      const response = await axios.post('http://lms.pelestari.id/api/login', {
+      const response = await axios.post('https://api.pelestari.id/api/login', {
         nik: formData.nik,
         password: formData.password,
       });
